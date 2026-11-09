@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-status-unworked: var(--status-unworked);
+  --color-status-wip: var(--status-wip);
+  --color-status-worked: var(--status-worked);
+  --color-link: var(--link);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0058cc;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #e7000b;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #0058cc;
+  --chart-1: #3f65c2;
+  --chart-2: #f18442;
+  --chart-3: #951b19;
+  --chart-4: #16a34a;
+  --chart-5: #ca8a04;
+  --sidebar: transparent;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #0058cc;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #71717a;
+  /* Titan status colors */
+  --status-unworked: #0058cc;
+  --status-wip: #ca8a04;
+  --status-worked: #16a34a;
+  --link: #0058cc;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* Pointer cursor on every interactive element (Tailwind v4 preflight resets buttons to the default cursor). */
+  :where(
+      button,
+      a[href],
+      label[for],
+      summary,
+      select,
+      [role="button"],
+      [role="tab"],
+      [role="menuitem"],
+      [role="menuitemcheckbox"],
+      [role="menuitemradio"],
+      [role="option"],
+      [role="checkbox"],
+      [role="radio"],
+      [role="switch"],
+      [role="combobox"]
+    ):not(:disabled, [data-disabled], [aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  /* The selected tab is not actionable. */
+  [role="tab"][data-state="active"] {
+    cursor: default;
+  }
+  :where(button, [role="button"], [role="tab"], [role="option"], [role="menuitem"]):is(:disabled, [data-disabled], [aria-disabled="true"]) {
+    cursor: not-allowed;
+  }
+}
+.titan-sidebar-bg {
+  background: linear-gradient(180deg, #003a7a 0%, #002454 55%, #001a40 100%);
+}
+[data-sidebar="sidebar"][data-mobile="true"] {
+  background: linear-gradient(180deg, #003a7a 0%, #002454 55%, #001a40 100%);
+}
+
+/* Toasts hug their content (Figma: Titan - 31) and stay right-aligned in the top-right stack. */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"].titan-toast {
+  width: fit-content;
+  right: 0;
+  left: auto;
+  padding: 15px 16px;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
