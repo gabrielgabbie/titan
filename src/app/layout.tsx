@@ -26,7 +26,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <TooltipProvider>
             <SidebarProvider className="titan-sidebar-bg" style={{ "--sidebar-width": "16.5rem" } as React.CSSProperties}>
               <AppSidebar />
-              <SidebarInset className="min-w-0">{children}</SidebarInset>
+              <SidebarInset className="min-w-0 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-0">{children}</SidebarInset>
             </SidebarProvider>
             <DqDetailsDialog />
             <Toaster

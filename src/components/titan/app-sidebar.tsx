@@ -14,7 +14,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import {
   DropdownMenu,
@@ -27,17 +26,24 @@ import {
 import { CURRENT_USER } from "@/lib/data"
 import { UserAvatar } from "./user-avatar"
 
-/** Foresight · Powered by Titan logo, composed from the four Figma SVG assets at their design positions. */
+/** Foresight · Powered by Titan logo, composed from the four Figma SVG assets at their design positions.
+ *  Collapsed (icon) sidebar shows the mark only. */
 function ForesightLogo() {
   return (
-    <div className="relative h-8 w-[119px]" aria-label="Foresight, powered by Titan" role="img">
+    <div
+      className="relative h-10 w-[148.75px] group-data-[collapsible=icon]:h-[27.065px] group-data-[collapsible=icon]:w-[22.857px]"
+      aria-label="Foresight, powered by Titan"
+      role="img"
+    >
       {/* eslint-disable @next/next/no-img-element */}
-      <img src="/brand/logo-mark.svg" alt="" className="absolute top-0 left-[0.1px] h-[21.652px] w-[18.286px]" />
-      <img src="/brand/logo-foresight.svg" alt="" className="absolute top-[0.32px] left-[23.87px] h-[22px] w-[94.702px]" />
-      <div className="absolute top-[24px] right-[-0.17px] h-[7.314px] w-[62.171px]">
-        <img src="/brand/logo-powered-by.svg" alt="" className="absolute top-[1.56px] left-0 h-[4.922px] w-[41.173px]" />
-        <div className="absolute top-0 left-[43.56px] h-[7.314px] w-[18.093px] overflow-hidden">
-          <img src="/brand/logo-titan.svg" alt="" className="absolute top-0 right-0 bottom-[2.92%] w-[17.941px]" />
+      <img src="/brand/logo-mark.svg" alt="" className="absolute top-0 left-[0.12px] h-[27.065px] w-[22.857px] group-data-[collapsible=icon]:left-0" />
+      <div className="group-data-[collapsible=icon]:hidden">
+        <img src="/brand/logo-foresight.svg" alt="" className="absolute top-[0.4px] left-[29.84px] h-[27.5px] w-[118.378px]" />
+        <div className="absolute top-[30px] right-[-0.46px] h-[9.143px] w-[77.714px]">
+          <img src="/brand/logo-powered-by.svg" alt="" className="absolute top-[1.94px] left-0 h-[6.152px] w-[51.466px]" />
+          <div className="absolute top-0 left-[54.45px] h-[9.143px] w-[22.617px] overflow-hidden">
+            <img src="/brand/logo-titan.svg" alt="" className="absolute top-0 right-[-0.5px] bottom-[2.92%] w-[22.426px]" />
+          </div>
         </div>
       </div>
       {/* eslint-enable @next/next/no-img-element */}
@@ -54,48 +60,63 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   return (
-    <Sidebar variant="inset" className="border-none">
-      <SidebarHeader className="p-0">
-        <Link href="/queues" className="flex pt-3 pb-2.5 pl-2.5">
+    <Sidebar
+      variant="inset"
+      collapsible="icon"
+      className="border-none group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
+    >
+      <SidebarHeader className="p-0 pt-2">
+        <Link
+          href="/queues"
+          className="flex py-2.5 pl-2.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2.5"
+        >
           <ForesightLogo />
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="px-0 py-0.5">
-          <SidebarGroupLabel className="text-sidebar-ring">Risk</SidebarGroupLabel>
-          <SidebarMenu className="gap-0.5">
+        <SidebarGroup className="gap-0.5 px-0 pt-0.5 pb-0">
+          <SidebarGroupLabel className="text-sidebar-ring group-data-[collapsible=icon]:hidden">Risk</SidebarGroupLabel>
+          <SidebarMenu className="gap-0.5 group-data-[collapsible=icon]:items-center">
             {NAV.map((item) => {
               const active = pathname.startsWith(item.href)
               return (
-                <SidebarMenuButton
-                  key={item.href}
-                  asChild
-                  isActive={active}
-                  className="data-[active=true]:bg-white/12 data-[active=true]:font-normal"
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={active}
+                    tooltip={item.label}
+                    className="data-[active=true]:bg-[#ffffff13]"
+                  >
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               )
             })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarSeparator className="mx-0 bg-white/12" />
-      <SidebarFooter className="px-0 pt-1 pb-0">
-        <SidebarMenu>
+      <SidebarFooter className="p-0 pb-1">
+        <SidebarMenu className="group-data-[collapsible=icon]:items-center">
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-                  <UserAvatar name={CURRENT_USER.name} className="size-8 rounded-lg [&>*]:rounded-lg" />
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{CURRENT_USER.name}</span>
-                    <span className="truncate text-xs">{CURRENT_USER.email}</span>
+                <SidebarMenuButton
+                  size="lg"
+                  className="data-[state=open]:bg-sidebar-accent group-data-[collapsible=icon]:size-12! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2!"
+                >
+                  <UserAvatar
+                    name={CURRENT_USER.name}
+                    className="size-8 rounded-lg [&>*]:rounded-lg"
+                    fallbackClassName="bg-zinc-200 text-sm font-normal text-foreground"
+                  />
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left text-white/82 group-data-[collapsible=icon]:hidden">
+                    <span className="truncate text-sm leading-none font-semibold">{CURRENT_USER.name}</span>
+                    <span className="truncate text-xs leading-none">{CURRENT_USER.email}</span>
                   </div>
-                  <ChevronsUpDown className="ml-auto" />
+                  <ChevronsUpDown className="ml-auto group-data-[collapsible=icon]:hidden" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start" className="w-(--radix-dropdown-menu-trigger-width) min-w-56">
