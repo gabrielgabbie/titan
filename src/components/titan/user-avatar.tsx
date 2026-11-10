@@ -29,10 +29,19 @@ export function initialsOf(name: string) {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase()
 }
 
-export function UserAvatar({ name, className }: { name: string; className?: string }) {
+export function UserAvatar({
+  name,
+  className,
+  fallbackClassName,
+}: {
+  name: string
+  className?: string
+  /** Overrides the hashed palette (e.g. the sidebar user uses a fixed zinc avatar). */
+  fallbackClassName?: string
+}) {
   return (
     <Avatar className={className} title={name}>
-      <AvatarFallback className={cn("font-medium", avatarColor(name))}>{initialsOf(name)}</AvatarFallback>
+      <AvatarFallback className={cn("font-medium", avatarColor(name), fallbackClassName)}>{initialsOf(name)}</AvatarFallback>
     </Avatar>
   )
 }
