@@ -100,7 +100,7 @@ function QueuesPopover({ row }: { row: Row }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-5 items-center rounded-full border bg-background px-1.5 text-xs font-medium hover:bg-accent"
+          className="inline-flex h-5 items-center rounded-full bg-card shadow-surface px-1.5 text-xs font-medium hover:bg-accent"
           aria-label={`${others} more queues`}
         >
           +{others}
@@ -115,7 +115,7 @@ function QueuesPopover({ row }: { row: Row }) {
         </div>
         <ul className="mt-3 flex flex-col">
           {all.map((a, i) => (
-            <li key={a.id} className={cn("py-2", i > 0 && "border-t")}>
+            <li key={a.id} className={cn("py-2", i > 0 && "inset-shadow-edge-t")}>
               <Link href={`/queues/${a.queueId}`} className={cn(linkClass, "text-sm")}>
                 {getQueue(a.queueId)?.name}
               </Link>
@@ -378,7 +378,7 @@ export function AlertGrid({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border">
+      <div className="surface overflow-hidden">
         <Table className="text-sm">
           <TableHeader className="bg-muted">
             <TableRow className="hover:bg-muted">
@@ -413,7 +413,7 @@ export function AlertGrid({
             {visible.map((row, ri) => (
               <TableRow
                 key={row.alert.id}
-                className={cn("h-14 hover:bg-zinc-100", ri % 2 === 1 ? "bg-zinc-50" : "bg-background")}
+                className={cn("h-14 hover:bg-zinc-100", ri % 2 === 1 ? "bg-zinc-50" : "bg-card")}
               >
                 {columns.map((col, i) => (
                   <TableCell

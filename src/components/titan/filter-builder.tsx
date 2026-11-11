@@ -135,7 +135,7 @@ export function FilterBuilder<T>({
         <Button
           variant="outline"
           size="sm"
-          className={cn((open || active > 0) && "border-primary/30 bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary")}
+          className={cn((open || active > 0) && "inset-ring inset-ring-primary/30 bg-primary/10! text-primary hover:bg-primary/15! hover:text-primary")}
         >
           <Filter />
           Filter
@@ -160,7 +160,7 @@ export function FilterBuilder<T>({
             ))
           )}
         </div>
-        <div className="flex items-center justify-between border-t px-2 py-2">
+        <div className="flex items-center justify-between inset-shadow-edge-t px-2 py-2">
           <Button variant="ghost" size="sm" className="text-link hover:text-link" onClick={() => onChange([...rules, newRule()])}>
             <Plus /> Add filter
           </Button>

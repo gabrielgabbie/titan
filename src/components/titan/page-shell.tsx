@@ -21,7 +21,7 @@ export interface Crumb {
 export function PageShell({ crumbs, children }: { crumbs: Crumb[]; children: React.ReactNode }) {
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3">
+      <header className="flex h-12 shrink-0 items-center gap-2 inset-shadow-edge-b px-3">
         <SidebarToggle />
         <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
         <Breadcrumb>
