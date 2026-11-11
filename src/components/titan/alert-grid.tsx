@@ -403,13 +403,6 @@ export function AlertGrid({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
-                  No merchants match the current filters.
-                </TableCell>
-              </TableRow>
-            )}
             {visible.map((row, ri) => (
               <TableRow
                 key={row.alert.id}
@@ -431,6 +424,12 @@ export function AlertGrid({
             ))}
           </TableBody>
         </Table>
+        {/* Outside the table, so it centers in the visible grid rather than across its full scroll width. */}
+        {visible.length === 0 && (
+          <div className="text-muted-foreground flex h-24 items-center justify-center text-sm">
+            No merchants match the current filters.
+          </div>
+        )}
       </div>
 
       {paginate && (
