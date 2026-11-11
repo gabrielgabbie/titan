@@ -75,7 +75,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup className="gap-0.5 px-0 pt-0.5 pb-0">
-          <SidebarGroupLabel className="text-sidebar-ring group-data-[collapsible=icon]:hidden">Risk</SidebarGroupLabel>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Risk</SidebarGroupLabel>
           <SidebarMenu className="gap-0.5 group-data-[collapsible=icon]:items-center">
             {NAV.map((item) => {
               const active = pathname.startsWith(item.href)
@@ -109,7 +109,6 @@ export function AppSidebar() {
                   <UserAvatar
                     name={CURRENT_USER.name}
                     className="size-8"
-                    fallbackClassName="bg-zinc-200 text-sm font-normal text-foreground"
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left text-white/82 group-data-[collapsible=icon]:hidden">
                     <span className="truncate text-sm leading-none font-semibold">{CURRENT_USER.name}</span>

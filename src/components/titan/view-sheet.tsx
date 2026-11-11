@@ -206,13 +206,15 @@ export function ViewSheet({
             </div>
           </SheetFooter>
         ) : (
-          <SheetFooter className="p-4">
-            <Button type="submit" form="view-form">
-              Create View
-            </Button>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
+          <SheetFooter className="flex-row items-center justify-end p-4">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" form="view-form">
+                Create View
+              </Button>
+            </div>
           </SheetFooter>
         )}
       </SheetContent>
