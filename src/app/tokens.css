@@ -15,7 +15,7 @@
   --accent-foreground: #18181b;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #0058cc;
+  --ring: #a1a1aa; /* Neutral focus ring, matching the Aperia Shadcn Library's base/ring. */
   --chart-1: #3f65c2;
   --chart-2: #f18442;
   --chart-3: #951b19;

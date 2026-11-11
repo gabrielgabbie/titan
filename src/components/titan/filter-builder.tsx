@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { cn } from "@/lib/utils"
 import { OPERATORS, isComplete, newRule, type FilterField, type FilterRule } from "@/lib/filters"
 import { CountBadge } from "./badges"
 
@@ -132,11 +131,7 @@ export function FilterBuilder<T>({
   return (
     <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn((open || active > 0) && "inset-ring inset-ring-primary/30 bg-primary/10! text-primary hover:bg-primary/15! hover:text-primary")}
-        >
+        <Button variant="outline" size="sm">
           <Filter />
           Filter
           {active > 0 && <CountBadge count={active} active />}
