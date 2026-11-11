@@ -110,15 +110,14 @@ export default function QueueViewPage() {
                   <TableCell className="px-2 text-right tabular-nums">{formatCurrency(q.netAmount)}</TableCell>
                 </TableRow>
               ))}
-              {data.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={COLS.length} className="text-muted-foreground h-20 text-center">
-                    No queues match your search.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
+          {/* Outside the table, so it centers in the visible grid rather than across its full scroll width. */}
+          {data.length === 0 && (
+            <div className="text-muted-foreground flex h-20 items-center justify-center text-sm">
+              No queues match your search.
+            </div>
+          )}
         </div>
       </div>
     </PageShell>
