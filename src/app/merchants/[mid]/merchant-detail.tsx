@@ -38,10 +38,10 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
   return (
     <Card className="gap-3 py-3">
       <CardHeader className="px-3">
-        <CardTitle className="text-sm font-medium">Alert Status</CardTitle>
+        <CardTitle className="text-sm font-semibold">Alert Status</CardTitle>
       </CardHeader>
       <CardContent className="px-3">
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg bg-card shadow-surface">
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
@@ -99,10 +99,10 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
   return (
     <Card className="gap-3 py-3">
       <CardHeader className="px-3">
-        <CardTitle className="text-sm font-medium">Transaction History</CardTitle>
+        <CardTitle className="text-sm font-semibold">Transaction History</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 px-3">
-        <div className="overflow-hidden rounded-lg border">
+        <div className="overflow-hidden rounded-lg bg-card shadow-surface">
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
@@ -138,7 +138,7 @@ function Cases({ mid }: { mid: string }) {
   return (
     <Card className="gap-3 py-3">
       <CardHeader className="px-3">
-        <CardTitle className="text-sm font-medium">Cases</CardTitle>
+        <CardTitle className="text-sm font-semibold">Cases</CardTitle>
         <CardAction>
           <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => {
               createCase(mid)
@@ -151,7 +151,7 @@ function Cases({ mid }: { mid: string }) {
       <CardContent className="flex flex-col gap-4 px-3">
         {list.length === 0 && <p className="text-muted-foreground text-sm">No cases for this merchant.</p>}
         {list.map((c) => (
-          <div key={c.id} className="flex items-center justify-between gap-4 rounded-lg border px-3 py-2.5">
+          <div key={c.id} className="flex items-center justify-between gap-4 rounded-lg px-3 py-2.5 shadow-surface">
             <div className="min-w-0">
               <div className="text-sm font-medium">
                 {c.id} · {c.title}
@@ -179,7 +179,7 @@ export function MerchantDetail({ mid }: { mid: string }) {
     <PageShell crumbs={[{ label: "Merchant View", href: "/merchants" }, { label: merchant.name }]}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex gap-2.5">
-          <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md border">
+          <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
             <Store className="size-4" />
           </div>
           <div className="flex flex-col gap-1">

@@ -63,7 +63,7 @@ export function AppSidebar() {
     <Sidebar
       variant="inset"
       collapsible="icon"
-      className="border-none group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
+      className="inset-shadow-none group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
     >
       <SidebarHeader className="p-0 pt-2">
         <Link
@@ -85,7 +85,6 @@ export function AppSidebar() {
                     asChild
                     isActive={active}
                     tooltip={item.label}
-                    className="data-[active=true]:bg-[#ffffff13]"
                   >
                     <Link href={item.href}>
                       <item.icon />
@@ -109,7 +108,7 @@ export function AppSidebar() {
                 >
                   <UserAvatar
                     name={CURRENT_USER.name}
-                    className="size-8 rounded-lg [&>*]:rounded-lg"
+                    className="size-8"
                     fallbackClassName="bg-zinc-200 text-sm font-normal text-foreground"
                   />
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left text-white/82 group-data-[collapsible=icon]:hidden">

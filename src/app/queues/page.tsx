@@ -75,7 +75,7 @@ export default function QueueViewPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border">
+        <div className="surface overflow-hidden">
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">

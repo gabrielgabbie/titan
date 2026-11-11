@@ -32,7 +32,7 @@ export function McScoreCard({ merchant }: { merchant: Merchant }) {
   return (
     <Card className="gap-4 py-3">
       <CardHeader className="px-3">
-        <CardTitle className="text-sm font-medium">MC Score</CardTitle>
+        <CardTitle className="text-sm font-semibold">MC Score</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-3">
         <div className="flex items-center justify-between">
@@ -80,7 +80,7 @@ export function McScoreCard({ merchant }: { merchant: Merchant }) {
             </BarChart>
           </ChartContainer>
         ) : (
-          <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-hidden rounded-lg bg-card shadow-surface">
             <Table>
               <TableHeader className="bg-muted">
                 <TableRow className="hover:bg-muted">

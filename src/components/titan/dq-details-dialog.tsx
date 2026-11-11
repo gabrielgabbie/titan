@@ -45,7 +45,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function SubTable({ children }: { children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className="overflow-hidden rounded-lg bg-card shadow-surface">
       <Table>{children}</Table>
     </div>
   )
@@ -134,11 +134,7 @@ function TodaysCycles({ alert, merchant }: { alert: Alert; merchant: Merchant })
             <TableCell className="px-2">{c.time}</TableCell>
             <TableCell className="px-2">{c.cycle}</TableCell>
             <TableCell className="px-2">
-              {c.alert ? (
-                <ResultBadge violated labels={["Alert", "No alert"]} />
-              ) : (
-                <span className="px-2 text-xs font-medium">No alert</span>
-              )}
+              <ResultBadge violated={c.alert} labels={["Alert", "No alert"]} />
             </TableCell>
             <TableCell className="px-2">{c.violated.length ? c.violated.join(", ") : "—"}</TableCell>
             <TableCell className="px-2 text-right tabular-nums">{c.score}</TableCell>
@@ -277,7 +273,7 @@ export function DqDetailsDialog() {
             </Tabs>
           </div>
 
-          <DialogFooter className="border-t p-4">
+          <DialogFooter className="inset-shadow-edge-t p-4">
             <DialogClose asChild>
               <Button variant="outline">Close</Button>
             </DialogClose>

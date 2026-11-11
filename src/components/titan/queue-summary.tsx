@@ -34,7 +34,7 @@ export function QueueSummary({ s }: { s: Summary }) {
         <Stat label="Worked" value={s.worked} />
         <Stat label="% Worked" value={`${s.pctWorked}%`} />
       </div>
-      <div className="bg-card flex flex-col gap-3 rounded-[10px] p-3 shadow-xs">
+      <div className="bg-card flex flex-col gap-3 rounded-[10px] p-3 shadow-surface">
         <div
           className="flex h-6 w-full overflow-hidden rounded-[4px]"
           role="img"

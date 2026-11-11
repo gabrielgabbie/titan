@@ -59,7 +59,7 @@ export function StatusIcon({ status, className }: { status: WorkStatus; classNam
 
 export function StatusBadge({ status }: { status: WorkStatus }) {
   return (
-    <Badge className={cn("gap-1 rounded-full border-transparent text-white", STATUS_BG[status])}>
+    <Badge className={cn("gap-1 rounded-full text-white", STATUS_BG[status])}>
       <StatusIcon status={status} className="size-3" />
       {STATUS_LABEL[status]}
     </Badge>
@@ -68,7 +68,7 @@ export function StatusBadge({ status }: { status: WorkStatus }) {
 
 export function ResultBadge({ violated, labels = ["Violated", "Not violated"] }: { violated: boolean; labels?: [string, string] }) {
   return violated ? (
-    <Badge className="rounded-full border-transparent bg-destructive/10 font-normal text-destructive">{labels[0]}</Badge>
+    <Badge className="rounded-full bg-destructive/10 font-normal text-destructive">{labels[0]}</Badge>
   ) : (
     <Badge variant="outline" className="rounded-full font-normal">
       {labels[1]}
@@ -81,7 +81,7 @@ export function CountBadge({ count, active }: { count: number; active?: boolean 
     <span
       className={cn(
         "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium tabular-nums",
-        active ? "bg-primary text-primary-foreground" : "border bg-background text-foreground"
+        active ? "bg-primary text-primary-foreground" : "bg-card text-foreground shadow-surface"
       )}
     >
       {count}
