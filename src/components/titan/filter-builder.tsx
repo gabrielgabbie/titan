@@ -30,7 +30,7 @@ function FilterRow<T>({
 
   return (
     <div className="flex items-end gap-2" data-filter-row>
-      <Button variant="ghost" size="icon-sm" className="mb-0 shrink-0" aria-label="Remove filter" onClick={onRemove}>
+      <Button variant="ghost" size="icon" className="mb-0 shrink-0" aria-label="Remove filter" onClick={onRemove}>
         <X />
       </Button>
 
@@ -131,7 +131,7 @@ export function FilterBuilder<T>({
   return (
     <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline">
           <Filter />
           Filter
           {active > 0 && <CountBadge count={active} active />}

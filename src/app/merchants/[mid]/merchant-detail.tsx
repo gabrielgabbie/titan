@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { GridPagination, PAGE_SIZE } from "@/components/titan/alert-grid"
+import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { SortHeader } from "@/components/titan/badges"
 import { DispositionControl } from "@/components/titan/disposition-control"
 import { McScoreCard } from "@/components/titan/mc-score-card"
@@ -22,7 +23,6 @@ import { useTitan } from "@/lib/store"
 import { useSort } from "@/lib/use-sort"
 
 const linkClass = "text-link underline-offset-2 hover:underline"
-const headCls = "h-[30px] px-2.5 text-xs"
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -45,25 +45,25 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
-                <TableHead className={headCls}>Queue Name</TableHead>
-                <TableHead className={headCls}>Violated Parameters</TableHead>
-                <TableHead className={headCls}>Alert/Re-Alert</TableHead>
-                <TableHead className={headCls}>Disposition</TableHead>
+                <TableHead className={gridHead}>Queue Name</TableHead>
+                <TableHead className={gridHead}>Violated Parameters</TableHead>
+                <TableHead className={gridHead}>Alert/Re-Alert</TableHead>
+                <TableHead className={gridHead}>Disposition</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {alerts.map((a, i) => (
-                <TableRow key={a.id} className={cn("h-14", i % 2 === 1 && "bg-zinc-50")}>
-                  <TableCell className="max-w-[200px] px-2 whitespace-normal">
+                <TableRow key={a.id} className={gridRow(i)}>
+                  <TableCell className={cn(gridCell, "max-w-[200px] whitespace-normal")}>
                     <Link href={`/queues/${a.queueId}`} className={linkClass}>
                       {getQueue(a.queueId)?.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-2">{a.violated.join(", ")}</TableCell>
-                  <TableCell className="px-2">
+                  <TableCell className={gridCell}>{a.violated.join(", ")}</TableCell>
+                  <TableCell className={gridCell}>
                     {a.kind} {a.time}
                   </TableCell>
-                  <TableCell className="px-2">
+                  <TableCell className={gridCell}>
                     <DispositionControl merchant={merchant} alertId={a.id} />
                   </TableCell>
                 </TableRow>
@@ -92,7 +92,7 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
   const paged = sorted.length > PAGE_SIZE
 
   const head = (key: Parameters<typeof toggle>[0], label: string, right = false) => (
-    <TableHead className={cn("h-[30px] px-2.5", right && "text-right")}>
+    <TableHead className={cn(gridHead, right && "text-right")}>
       <SortHeader label={label} dir={dirOf(key)} onClick={() => toggle(key)} />
     </TableHead>
   )
@@ -116,12 +116,12 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
             </TableHeader>
             <TableBody>
               {rows.map((t, i) => (
-                <TableRow key={`${t.dateTime}-${i}`} className={cn("h-9", i % 2 === 1 && "bg-zinc-50")}>
-                  <TableCell className="px-2">{t.dateTime}</TableCell>
-                  <TableCell className="px-2">{t.type}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{formatCurrency(t.amount)}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{t.score}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{formatSigned(t.change)}</TableCell>
+                <TableRow key={`${t.dateTime}-${i}`} className={gridRow(i, "h-9")}>
+                  <TableCell className={gridCell}>{t.dateTime}</TableCell>
+                  <TableCell className={gridCell}>{t.type}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatCurrency(t.amount)}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{t.score}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatSigned(t.change)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -141,7 +141,7 @@ function Cases({ mid }: { mid: string }) {
       <CardHeader className="px-3">
         <CardTitle className="text-sm font-semibold">Cases</CardTitle>
         <CardAction>
-          <Button variant="outline" size="xs" className="h-7 px-2.5" onClick={() => {
+          <Button variant="outline" size="sm" onClick={() => {
               createCase(mid)
               toast.success("Case created.")
             }}>
@@ -199,7 +199,7 @@ export function MerchantDetail({ mid }: { mid: string }) {
             </div>
           </div>
         </div>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" asChild>
           <a href="#" onClick={(e) => e.preventDefault()} title="Opens the VisionWeb risk report">
             VW Risk Report <ExternalLink />
           </a>

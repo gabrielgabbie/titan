@@ -29,13 +29,12 @@ function NoteItem({ mid, note }: { mid: string; note: Note }) {
           </div>
           {editable && !editing && (
             <div className="flex gap-1">
-              <Button variant="outline" size="icon-xs" className="size-7" aria-label="Edit note" onClick={() => setEditing(true)}>
+              <Button variant="outline" size="icon-sm" aria-label="Edit note" onClick={() => setEditing(true)}>
                 <Pencil />
               </Button>
               <Button
-                variant="ghost"
-                size="icon-xs"
-                className="bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive size-7"
+                variant="destructive"
+                size="icon-sm"
                 aria-label="Delete note"
                 onClick={() => {
                   deleteNote(mid, note.id)

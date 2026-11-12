@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils"
 import { SortHeader, type SortDir } from "@/components/titan/badges"
 import { FilterBuilder } from "@/components/titan/filter-builder"
+import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { applyFilters, type FilterField, type FilterRule } from "@/lib/filters"
 import { PageShell } from "@/components/titan/page-shell"
 import { ReportDatePicker } from "@/components/titan/toolbar"
@@ -80,7 +81,7 @@ export default function QueueViewPage() {
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
                 {COLS.map((c) => (
-                  <TableHead key={c.key} className={cn("h-[30px] px-2.5 text-xs", c.right && "text-right")}>
+                  <TableHead key={c.key} className={cn(gridHead, c.right && "text-right")}>
                     <SortHeader
                       label={c.label}
                       dir={sort?.key === c.key ? sort.dir : null}
@@ -96,18 +97,18 @@ export default function QueueViewPage() {
             </TableHeader>
             <TableBody>
               {data.map((q, i) => (
-                <TableRow key={q.id} className={cn("h-11", i % 2 === 1 && "bg-zinc-50")}>
-                  <TableCell className="px-2">
+                <TableRow key={q.id} className={gridRow(i, "h-11")}>
+                  <TableCell className={gridCell}>
                     <Link href={`/queues/${q.id}`} className="text-link underline-offset-2 hover:underline">
                       {q.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{q.total}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{q.unworked}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{q.wip}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{q.worked}</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{q.pctWorked}%</TableCell>
-                  <TableCell className="px-2 text-right tabular-nums">{formatCurrency(q.netAmount)}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.total}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.unworked}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.wip}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.worked}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.pctWorked}%</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatCurrency(q.netAmount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

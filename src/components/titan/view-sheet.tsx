@@ -185,8 +185,8 @@ export function ViewSheet({
           <SheetFooter className="flex-row items-center justify-between p-4">
             <Button
               type="button"
-              variant="link"
-              className="text-destructive px-2.5"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
               disabled={state.views.length <= 1}
               onClick={() => {
                 if (active) deleteView(scope, active.id)
