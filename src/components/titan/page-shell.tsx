@@ -21,9 +21,10 @@ export interface Crumb {
 export function PageShell({ crumbs, children }: { crumbs: Crumb[]; children: React.ReactNode }) {
   return (
     <>
-      <header className="flex h-12 shrink-0 items-center gap-2 inset-shadow-edge-b px-3">
-        <SidebarToggle />
-        <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
+      {/* On desktop the toggle lives in the sidebar, so the breadcrumb lines up with the page content (px-5). */}
+      <header className="flex h-12 shrink-0 items-center gap-2 inset-shadow-edge-b px-3 md:px-5">
+        <SidebarToggle className="md:hidden" />
+        <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4 md:hidden" />
         <Breadcrumb>
           <BreadcrumbList>
             {crumbs.map((c, i) => {
