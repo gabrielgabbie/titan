@@ -237,6 +237,9 @@ function pageList(page: number, pages: number): (number | "…")[] {
   return out
 }
 
+/** Rows on one page by default. Every grid shows pagination only when it has more rows than this. */
+export const PAGE_SIZE = 10
+
 export function GridPagination({
   page,
   pages,
@@ -305,7 +308,7 @@ export function AlertGrid({
   const fields = React.useMemo(() => filterFields(scope), [scope])
   const [sort, setSort] = React.useState<{ id: ColumnId; dir: Exclude<SortDir, null> } | null>(null)
   const [page, setPage] = React.useState(1)
-  const [pageSize, setPageSize] = React.useState(10)
+  const [pageSize, setPageSize] = React.useState(PAGE_SIZE)
 
   const columns: ColumnDef[] = [
     ...lockedColumns(scope),
@@ -334,9 +337,11 @@ export function AlertGrid({
     })
   }
 
-  const pages = paginate ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1
+  // Pagination shows only when the rows outgrow one default page; otherwise every row shows, whatever page size is set.
+  const paged = paginate && filtered.length > PAGE_SIZE
+  const pages = paged ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1
   const current = Math.min(page, pages)
-  const visible = paginate ? filtered.slice((current - 1) * pageSize, current * pageSize) : filtered
+  const visible = paged ? filtered.slice((current - 1) * pageSize, current * pageSize) : filtered
 
   React.useEffect(() => setPage(1), [tab, query, rules, pageSize])
 
@@ -432,7 +437,7 @@ export function AlertGrid({
         )}
       </div>
 
-      {paginate && (
+      {paged && (
         <div className="flex flex-wrap items-center justify-between gap-4">
           <span className="text-muted-foreground text-sm">
             Showing {visible.length} of {filtered.length}

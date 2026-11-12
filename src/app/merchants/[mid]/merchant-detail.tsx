@@ -11,7 +11,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import { GridPagination } from "@/components/titan/alert-grid"
+import { GridPagination, PAGE_SIZE } from "@/components/titan/alert-grid"
 import { SortHeader } from "@/components/titan/badges"
 import { DispositionControl } from "@/components/titan/disposition-control"
 import { McScoreCard } from "@/components/titan/mc-score-card"
@@ -86,9 +86,10 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
     score: (t) => t.score,
     change: (t) => t.change,
   })
-  const pageSize = 10
+  const pageSize = PAGE_SIZE
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize))
   const rows = sorted.slice((page - 1) * pageSize, page * pageSize)
+  const paged = sorted.length > PAGE_SIZE
 
   const head = (key: Parameters<typeof toggle>[0], label: string, right = false) => (
     <TableHead className={cn("h-[30px] px-2.5", right && "text-right")}>
@@ -126,7 +127,7 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
             </TableBody>
           </Table>
         </div>
-        <GridPagination page={page} pages={pages} onPage={setPage} className="justify-center" />
+        {paged && <GridPagination page={page} pages={pages} onPage={setPage} className="justify-center" />}
       </CardContent>
     </Card>
   )

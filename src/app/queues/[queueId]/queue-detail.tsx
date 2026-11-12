@@ -54,7 +54,7 @@ export function QueueDetail({ queueId }: { queueId: string }) {
       </div>
       <ViewToolbar scope="queue" />
       <QueueSummary s={summarize(rows)} />
-      <AlertGrid rows={rows} scope="queue" />
+      <AlertGrid rows={rows} scope="queue" paginate />
     </PageShell>
   )
 }
