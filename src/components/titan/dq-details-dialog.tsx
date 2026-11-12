@@ -31,6 +31,7 @@ import {
 import { useTitan } from "@/lib/store"
 import { useSort } from "@/lib/use-sort"
 import { ResultBadge, SortHeader, StatusBadge } from "./badges"
+import { gridCell, gridHead, gridRow } from "./grid"
 
 const linkClass = "text-link underline-offset-2 hover:underline"
 
@@ -51,9 +52,6 @@ function SubTable({ children }: { children: React.ReactNode }) {
   )
 }
 
-const headCls = "h-[30px] px-2.5 text-xs"
-const rowCls = (i: number) => cn("h-14", i % 2 === 1 && "bg-zinc-50")
-
 function ParameterResults({ alert, merchant }: { alert: Alert; merchant: Merchant }) {
   const rows = merchant.paramActuals.map((p) => ({ ...p, violated: alert.violated.includes(p.code) }))
   const { sorted, toggle, dirOf } = useSort(rows, {
@@ -64,7 +62,7 @@ function ParameterResults({ alert, merchant }: { alert: Alert; merchant: Merchan
     result: (r) => (r.violated ? 0 : 1),
   })
   const head = (key: Parameters<typeof toggle>[0], label: string) => (
-    <TableHead className={headCls}>
+    <TableHead className={gridHead}>
       <SortHeader label={label} dir={dirOf(key)} onClick={() => toggle(key)} />
     </TableHead>
   )
@@ -81,15 +79,15 @@ function ParameterResults({ alert, merchant }: { alert: Alert; merchant: Merchan
       </TableHeader>
       <TableBody>
         {sorted.map((r, i) => (
-          <TableRow key={r.code} className={rowCls(i)}>
-            <TableCell className="px-2">
+          <TableRow key={r.code} className={gridRow(i)}>
+            <TableCell className={gridCell}>
               <div>{r.code}</div>
               <div className="text-muted-foreground text-xs">{PARAMETERS[r.code].name}</div>
             </TableCell>
-            <TableCell className="px-2">{PARAMETERS[r.code].configured}</TableCell>
-            <TableCell className="px-2">{r.actual}</TableCell>
-            <TableCell className="px-2">{r.nextReAlert ?? "—"}</TableCell>
-            <TableCell className="px-2">
+            <TableCell className={gridCell}>{PARAMETERS[r.code].configured}</TableCell>
+            <TableCell className={gridCell}>{r.actual}</TableCell>
+            <TableCell className={gridCell}>{r.nextReAlert ?? "—"}</TableCell>
+            <TableCell className={gridCell}>
               <ResultBadge violated={r.violated} />
             </TableCell>
           </TableRow>
@@ -111,33 +109,33 @@ function TodaysCycles({ alert, merchant }: { alert: Alert; merchant: Merchant })
     <SubTable>
       <TableHeader className="bg-muted">
         <TableRow className="hover:bg-muted">
-          <TableHead className={headCls}>
+          <TableHead className={gridHead}>
             <SortHeader label="Time" dir={dirOf("time")} onClick={() => toggle("time")} />
           </TableHead>
-          <TableHead className={headCls}>
+          <TableHead className={gridHead}>
             <SortHeader label="MC File Cycle" dir={dirOf("cycle")} onClick={() => toggle("cycle")} />
           </TableHead>
-          <TableHead className={headCls}>
+          <TableHead className={gridHead}>
             <SortHeader label="Result" dir={dirOf("result")} onClick={() => toggle("result")} />
           </TableHead>
-          <TableHead className={headCls}>
+          <TableHead className={gridHead}>
             <SortHeader label="Violated Parameters" dir={dirOf("violated")} onClick={() => toggle("violated")} />
           </TableHead>
-          <TableHead className={cn(headCls, "text-right")}>
+          <TableHead className={cn(gridHead, "text-right")}>
             <SortHeader label="MC Score" dir={dirOf("score")} onClick={() => toggle("score")} />
           </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {sorted.map((c, i) => (
-          <TableRow key={c.cycle} className={rowCls(i)}>
-            <TableCell className="px-2">{c.time}</TableCell>
-            <TableCell className="px-2">{c.cycle}</TableCell>
-            <TableCell className="px-2">
+          <TableRow key={c.cycle} className={gridRow(i)}>
+            <TableCell className={gridCell}>{c.time}</TableCell>
+            <TableCell className={gridCell}>{c.cycle}</TableCell>
+            <TableCell className={gridCell}>
               <ResultBadge violated={c.alert} labels={["Alert", "No alert"]} />
             </TableCell>
-            <TableCell className="px-2">{c.violated.length ? c.violated.join(", ") : "—"}</TableCell>
-            <TableCell className="px-2 text-right tabular-nums">{c.score}</TableCell>
+            <TableCell className={gridCell}>{c.violated.length ? c.violated.join(", ") : "—"}</TableCell>
+            <TableCell className={cn(gridCell, "text-right tabular-nums")}>{c.score}</TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -177,27 +175,27 @@ function AlertHistory({ alert, merchant }: { alert: Alert; merchant: Merchant })
       <SubTable>
         <TableHeader className="bg-muted">
           <TableRow className="hover:bg-muted">
-            <TableHead className={headCls}>
+            <TableHead className={gridHead}>
               <SortHeader label="Date and Time" dir={dirOf("date")} onClick={() => toggle("date")} />
             </TableHead>
-            <TableHead className={headCls}>
+            <TableHead className={gridHead}>
               <SortHeader label="Alert/Re-alert" dir={dirOf("kind")} onClick={() => toggle("kind")} />
             </TableHead>
-            <TableHead className={headCls}>
+            <TableHead className={gridHead}>
               <SortHeader label="Parameters Met" dir={dirOf("params")} onClick={() => toggle("params")} />
             </TableHead>
-            <TableHead className={headCls}>
+            <TableHead className={gridHead}>
               <SortHeader label="Disposition" dir={dirOf("status")} onClick={() => toggle("status")} />
             </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {sorted.map((r, i) => (
-            <TableRow key={r.dateTime} className={rowCls(i)}>
-              <TableCell className="px-2">{r.dateTime}</TableCell>
-              <TableCell className="px-2">{r.kind}</TableCell>
-              <TableCell className="px-2">{r.params.join(" · ")}</TableCell>
-              <TableCell className="px-2">
+            <TableRow key={r.dateTime} className={gridRow(i)}>
+              <TableCell className={gridCell}>{r.dateTime}</TableCell>
+              <TableCell className={gridCell}>{r.kind}</TableCell>
+              <TableCell className={gridCell}>{r.params.join(" · ")}</TableCell>
+              <TableCell className={gridCell}>
                 <StatusBadge status={r.status} />
               </TableCell>
             </TableRow>

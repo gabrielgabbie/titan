@@ -33,6 +33,7 @@ import { columnById, columnsForScope, lockedColumns, type ColumnDef, type Column
 import { useTitan } from "@/lib/store"
 import { applyFilters, type FilterField, type FilterRule } from "@/lib/filters"
 import { CountBadge, McBandBadge, STATUS_LABEL, SortHeader, type SortDir } from "./badges"
+import { gridCell, gridHead } from "./grid"
 import { FilterBuilder } from "./filter-builder"
 import { DispositionControl } from "./disposition-control"
 
@@ -255,7 +256,7 @@ export function GridPagination({
     <Pagination className={cn("mx-0 w-auto", className)}>
       <PaginationContent>
         <PaginationItem>
-          <Button variant="ghost" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+          <Button variant="ghost" disabled={page <= 1} onClick={() => onPage(page - 1)}>
             <ChevronLeft /> Previous
           </Button>
         </PaginationItem>
@@ -280,7 +281,7 @@ export function GridPagination({
           </PaginationItem>
         ))}
         <PaginationItem>
-          <Button variant="ghost" size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+          <Button variant="ghost" disabled={page >= pages} onClick={() => onPage(page + 1)}>
             Next <ChevronRight />
           </Button>
         </PaginationItem>
@@ -392,7 +393,7 @@ export function AlertGrid({
                   key={col.id}
                   style={{ minWidth: col.width }}
                   className={cn(
-                    "h-[30px] px-2.5 text-xs",
+                    gridHead,
                     col.align === "right" && "text-right",
                     i === 0 && "bg-muted sticky left-0 z-20 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
                   )}
@@ -417,7 +418,8 @@ export function AlertGrid({
                   <TableCell
                     key={col.id}
                     className={cn(
-                      "px-2.5 py-2",
+                      gridCell,
+                      "py-2",
                       col.align === "right" && "text-right tabular-nums",
                       i === 0 && "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
                     )}

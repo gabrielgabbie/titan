@@ -15,7 +15,7 @@ function DqAssignment({ queueId }: { queueId: string }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="link" className="text-link h-9 px-2.5">
+        <Button variant="link" className="text-link">
           View DQ Assignment
         </Button>
       </PopoverTrigger>

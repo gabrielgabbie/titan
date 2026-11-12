@@ -27,7 +27,7 @@ export function ReportDatePicker() {
       <span className="text-sm font-medium">Report Date:</span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="w-[130px] justify-between px-2.5 font-normal">
+          <Button variant="outline" className="w-[130px] justify-between font-normal">
             {format(reportDate, "MM/dd/yyyy")}
             <CalendarIcon />
           </Button>
@@ -67,7 +67,7 @@ export function ViewToolbar({ scope }: { scope: ViewScope }) {
         <span className="text-sm font-medium">View:</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="w-[150px] justify-between px-2.5 font-normal">
+            <Button variant="outline" className="w-[150px] justify-between font-normal">
               <span className="truncate">{active?.name ?? "Select view"}</span>
               <ChevronDown className="opacity-70" />
             </Button>
@@ -86,7 +86,7 @@ export function ViewToolbar({ scope }: { scope: ViewScope }) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="link" size="sm" className="text-link px-2" onClick={() => openSheet("edit")} disabled={!active}>
+        <Button variant="link" className="text-link" onClick={() => openSheet("edit")} disabled={!active}>
           Edit View
         </Button>
       </div>
