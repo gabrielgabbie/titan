@@ -1,15 +1,15 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/data"
 import type { summarize } from "@/lib/use-rows"
 
 type Summary = ReturnType<typeof summarize>
 
-/** One figure on a small ds5 card: what it counts as the title, the number below. */
+/** One figure on a small ds5 card: what it counts in the description style, the number below. */
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <Card size="sm">
       <CardHeader>
-        <CardTitle>{label}</CardTitle>
+        <CardDescription>{label}</CardDescription>
       </CardHeader>
       <CardContent className="text-2xl font-semibold tabular-nums">{value}</CardContent>
     </Card>

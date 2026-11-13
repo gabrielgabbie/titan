@@ -36,10 +36,9 @@ import { CountBadge, McBandBadge, STATUS_LABEL, SortHeader, type SortDir } from 
 import { gridCell, gridHead } from "./grid"
 import { FilterBuilder } from "./filter-builder"
 import { DispositionControl } from "./disposition-control"
+import { DqDetailsBadge, QueueLink, linkClass } from "./links"
 
-type StatusTab = "all" | WorkStatus
-
-const linkClass = "text-link hover:underline underline-offset-2"
+export type StatusTab = "all" | WorkStatus
 
 function sortValue(row: Row, id: ColumnId): string | number {
   const { merchant: m, alert: a } = row
@@ -117,9 +116,7 @@ function QueuesPopover({ row }: { row: Row }) {
         <ul className="mt-3 flex flex-col">
           {all.map((a, i) => (
             <li key={a.id} className={cn("py-2", i > 0 && "inset-shadow-edge-t")}>
-              <Link href={`/queues/${a.queueId}`} className={cn(linkClass, "text-sm")}>
-                {getQueue(a.queueId)?.name}
-              </Link>
+              <QueueLink queueId={a.queueId} className="text-sm" />
               <div className="text-muted-foreground text-xs">{a.queueReason}</div>
             </li>
           ))}
@@ -138,16 +135,17 @@ function Cell({ row, col }: { row: Row; col: ColumnDef }) {
       return <span className="tabular-nums">{m.mid}</span>
     case "merchantName":
       return (
-        <Link href={`/merchants/${m.mid}`} className={linkClass}>
-          {m.name}
-        </Link>
+        <div className="flex min-w-0 items-center gap-2">
+          <Link href={`/merchants/${m.mid}`} className={cn(linkClass, "truncate")}>
+            {m.name}
+          </Link>
+          <DqDetailsBadge merchant={m} />
+        </div>
       )
     case "queueName":
       return (
         <div className="flex items-center gap-2">
-          <Link href={`/queues/${a.queueId}`} className={linkClass}>
-            {getQueue(a.queueId)?.name}
-          </Link>
+          <QueueLink queueId={a.queueId} />
           <QueuesPopover row={row} />
         </div>
       )
@@ -294,16 +292,19 @@ export function AlertGrid({
   rows,
   scope,
   paginate = false,
+  initialTab = "all",
 }: {
   rows: Row[]
   scope: ViewScope
   paginate?: boolean
+  /** The status tab the grid opens on, such as the one a Queue View count links to. */
+  initialTab?: StatusTab
 }) {
   const { viewState } = useTitan()
   const state = viewState[scope]
   const view = state.views.find((v) => v.id === state.activeId) ?? state.views[0]
 
-  const [tab, setTab] = React.useState<StatusTab>("all")
+  const [tab, setTab] = React.useState<StatusTab>(initialTab)
   const [query, setQuery] = React.useState("")
   const [rules, setRules] = React.useState<FilterRule[]>([])
   const fields = React.useMemo(() => filterFields(scope), [scope])
@@ -311,10 +312,17 @@ export function AlertGrid({
   const [page, setPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(PAGE_SIZE)
 
-  const columns: ColumnDef[] = [
-    ...lockedColumns(scope),
-    ...(view?.columns.filter((c) => c.visible).map((c) => columnById(c.id)) ?? []),
-  ]
+  // Locked columns lead, except Detection Queue, which follows MCC when the view shows it (as in Figma).
+  const locked = lockedColumns(scope)
+  const chosen = view?.columns.filter((c) => c.visible).map((c) => columnById(c.id)) ?? []
+  const queueCol = locked.find((c) => c.id === "queueName")
+  const lead = locked.filter((c) => c.id !== "queueName")
+  const mccAt = chosen.findIndex((c) => c.id === "mcc")
+  const columns: ColumnDef[] = !queueCol
+    ? [...lead, ...chosen]
+    : mccAt >= 0
+      ? [...lead, ...chosen.slice(0, mccAt + 1), queueCol, ...chosen.slice(mccAt + 1)]
+      : [...lead, queueCol, ...chosen]
 
   const counts = {
     all: rows.length,
