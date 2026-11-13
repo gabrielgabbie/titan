@@ -386,6 +386,72 @@ export function alertHistoryFor(alert: Alert, merchant: Merchant, currentStatus:
   return rows.concat(past.slice(0, Math.max(0, merchant.history90d - 1) + 2))
 }
 
+// ---------- Merchant-level DQ details ----------
+
+/** A queue can configure a parameter differently from the default; only the differences are listed. */
+const QUEUE_PARAM_CONFIG: Partial<Record<string, Partial<Record<ParamCode, string>>>> = {
+  "mc-critical-band-watch": { "P#C1": "Moves up into Critical" },
+}
+
+export const configuredFor = (queueId: string, code: ParamCode) =>
+  QUEUE_PARAM_CONFIG[queueId]?.[code] ?? PARAMETERS[code].configured
+
+/** Minutes since midnight, for ordering "06:12:00 PM"-style times. */
+const minutesOf = (time: string) => {
+  const [hms, ampm] = time.split(" ")
+  const [h, m] = hms.split(":").map(Number)
+  return ((h % 12) + (ampm === "PM" ? 12 : 0)) * 60 + m
+}
+
+export interface ViolatedParam {
+  code: ParamCode
+  /** Every detection queue that alerted on this parameter today, each with its own configuration. */
+  queues: { queueId: string; configured: string }[]
+  actual: string
+  nextReAlert: string | null
+}
+
+/** One row per parameter violated in any of the merchant's alerts, in parameter order. */
+export function violatedParamsFor(merchant: Merchant): ViolatedParam[] {
+  const alerts = alertsForMerchant(merchant.mid)
+  return PARAM_ORDER.flatMap((code) => {
+    const queues = alerts.filter((a) => a.violated.includes(code)).map((a) => ({ queueId: a.queueId, configured: configuredFor(a.queueId, code) }))
+    if (!queues.length) return []
+    const p = merchant.paramActuals.find((x) => x.code === code)
+    return [{ code, queues, actual: p?.actual ?? "—", nextReAlert: p?.nextReAlert ?? null }]
+  })
+}
+
+/** The merchant's latest alert today, as "MM/DD/YYYY hh:mm:ss AM". */
+export function lastAlertedFor(mid: string): string {
+  const latest = [...alertsForMerchant(mid)].sort((a, b) => minutesOf(b.time) - minutesOf(a.time))[0]
+  return latest ? `${REPORT_DATE} ${latest.time}` : "—"
+}
+
+/** Today's cycles that alerted in any queue, with the parameters violated across all of them. */
+export function merchantCyclesFor(merchant: Merchant): Cycle[] {
+  const byCycle = new Map<string, Cycle>()
+  for (const a of alertsForMerchant(merchant.mid)) {
+    for (const c of cyclesFor(a, merchant).filter((c) => c.alert)) {
+      const prev = byCycle.get(c.cycle)
+      const violated = new Set([...(prev?.violated ?? []), ...c.violated])
+      byCycle.set(c.cycle, { ...c, violated: PARAM_ORDER.filter((p) => violated.has(p)) })
+    }
+  }
+  return [...byCycle.values()].sort((a, b) => minutesOf(b.time) - minutesOf(a.time))
+}
+
+export type MerchantAlertHistoryRow = AlertHistoryRow & { queueId: string }
+
+/** Today's alert from every queue, then the merchant's earlier alerts, newest first. */
+export function merchantAlertHistoryFor(merchant: Merchant, currentStatus: WorkStatus): MerchantAlertHistoryRow[] {
+  const alerts = alertsForMerchant(merchant.mid)
+  if (!alerts.length) return []
+  const today = alerts.map((a) => ({ ...alertHistoryFor(a, merchant, currentStatus)[0], queueId: a.queueId }))
+  const past = alertHistoryFor(alerts[0], merchant, currentStatus).slice(1).map((r) => ({ ...r, queueId: alerts[0].queueId }))
+  return [...today, ...past]
+}
+
 // ---------- Transactions ----------
 export interface Transaction {
   dateTime: string

@@ -125,7 +125,7 @@ export function ViewSheet({
                 type="button"
                 variant="link"
                 size="xs"
-                className="text-link h-auto px-0 font-normal"
+                className="text-link h-auto px-0"
                 onClick={() => setColumns(defaultColumnSettings(scope))}
               >
                 Reset to Default

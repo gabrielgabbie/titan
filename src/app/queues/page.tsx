@@ -12,20 +12,21 @@ import { FilterBuilder } from "@/components/titan/filter-builder"
 import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { applyFilters, type FilterField, type FilterRule } from "@/lib/filters"
 import { PageShell } from "@/components/titan/page-shell"
+import { QueueLink, linkClass, reportHref } from "@/components/titan/links"
 import { ReportDatePicker } from "@/components/titan/toolbar"
 import { QUEUES, alertsForQueue, formatCurrency } from "@/lib/data"
 import { summarize, useRows } from "@/lib/use-rows"
 
 type Key = "name" | "total" | "unworked" | "wip" | "worked" | "pctWorked" | "netAmount"
 
-const COLS: { key: Key; label: string; right?: boolean }[] = [
-  { key: "name", label: "Queue Name" },
-  { key: "total", label: "Alerted Merchants", right: true },
-  { key: "unworked", label: "Unworked", right: true },
-  { key: "wip", label: "WIP", right: true },
-  { key: "worked", label: "Worked", right: true },
-  { key: "pctWorked", label: "% Worked", right: true },
-  { key: "netAmount", label: "Today's Net Amount", right: true },
+const COLS: { key: Key; label: string; right?: boolean; width?: string }[] = [
+  { key: "name", label: "Detection Queue" },
+  { key: "total", label: "Alerted Merchants", right: true, width: "w-[180px]" },
+  { key: "unworked", label: "Unworked", right: true, width: "w-[120px]" },
+  { key: "wip", label: "WIP", right: true, width: "w-[120px]" },
+  { key: "worked", label: "Worked", right: true, width: "w-[120px]" },
+  { key: "pctWorked", label: "% Worked", right: true, width: "w-[120px]" },
+  { key: "netAmount", label: "Today's Net Amount", right: true, width: "w-[190px]" },
 ]
 
 type QueueRow = { name: string } & Record<Exclude<Key, "name">, number>
@@ -35,6 +36,21 @@ const FIELDS: FilterField<QueueRow>[] = COLS.map((c) =>
     ? { id: c.key, label: c.label, type: "text" as const, get: (q: QueueRow) => q.name }
     : { id: c.key, label: c.label, type: "number" as const, get: (q: QueueRow) => q[c.key as Exclude<Key, "name">] }
 )
+
+/** A count opens the queue's Alerted Merchants report, on its status tab; a zero opens nothing, so it stays plain. */
+function CountCell({ queueId, queueName, count, what, status }: { queueId: string; queueName: string; count: number; what: string; status?: string }) {
+  return (
+    <TableCell className={cn(gridCell, "text-right tabular-nums")}>
+      {count > 0 ? (
+        <Link href={reportHref(queueId, status)} className={linkClass} aria-label={`${count} ${what} in ${queueName}`}>
+          {count}
+        </Link>
+      ) : (
+        count
+      )}
+    </TableCell>
+  )
+}
 
 export default function QueueViewPage() {
   const rows = useRows()
@@ -71,7 +87,7 @@ export default function QueueViewPage() {
               <InputGroupAddon>
                 <Search />
               </InputGroupAddon>
-              <InputGroupInput placeholder="Search Queue Name" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <InputGroupInput placeholder="Search Detection Queue" value={query} onChange={(e) => setQuery(e.target.value)} />
             </InputGroup>
           </div>
         </div>
@@ -81,7 +97,7 @@ export default function QueueViewPage() {
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
                 {COLS.map((c) => (
-                  <TableHead key={c.key} className={cn(gridHead, c.right && "text-right")}>
+                  <TableHead key={c.key} className={cn(gridHead, c.right && "text-right", c.width)}>
                     <SortHeader
                       label={c.label}
                       dir={sort?.key === c.key ? sort.dir : null}
@@ -99,14 +115,12 @@ export default function QueueViewPage() {
               {data.map((q, i) => (
                 <TableRow key={q.id} className={gridRow(i, "h-11")}>
                   <TableCell className={gridCell}>
-                    <Link href={`/queues/${q.id}`} className="text-link underline-offset-2 hover:underline">
-                      {q.name}
-                    </Link>
+                    <QueueLink queueId={q.id} />
                   </TableCell>
-                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.total}</TableCell>
-                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.unworked}</TableCell>
-                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.wip}</TableCell>
-                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.worked}</TableCell>
+                  <CountCell queueId={q.id} queueName={q.name} count={q.total} what="alerted merchants" />
+                  <CountCell queueId={q.id} queueName={q.name} count={q.unworked} what="unworked" status="unworked" />
+                  <CountCell queueId={q.id} queueName={q.name} count={q.wip} what="WIP" status="wip" />
+                  <CountCell queueId={q.id} queueName={q.name} count={q.worked} what="worked" status="worked" />
                   <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.pctWorked}%</TableCell>
                   <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatCurrency(q.netAmount)}</TableCell>
                 </TableRow>
