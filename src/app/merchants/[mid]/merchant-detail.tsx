@@ -134,7 +134,7 @@ export function MerchantDetail({ mid }: { mid: string }) {
   const merchant = getMerchant(mid)!
 
   return (
-    <PageShell crumbs={[{ label: "Merchant View", href: "/merchants" }, { label: merchant.name }]}>
+    <PageShell crumbs={[{ label: "Merchant View", href: "/merchants" }, { label: "Merchant Details" }]}>
       <div className="flex items-start justify-between gap-4">
         <div className="flex gap-2.5">
           <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-md">
