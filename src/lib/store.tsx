@@ -45,11 +45,14 @@ interface TitanState {
   cases: Record<string, Case[]>
   createCase: (mid: string) => void
 
-  /** The merchant whose DQ Details dialog is open. */
+  /** The merchant whose DQ Details dialog is open, and the tab it opens on. */
   dqMid: string | null
-  openDqDetails: (mid: string) => void
+  dqTab: DqTab
+  openDqDetails: (mid: string, tab?: DqTab) => void
   closeDqDetails: () => void
 }
+
+export type DqTab = "cycles" | "history"
 
 const TitanContext = React.createContext<TitanState | null>(null)
 
@@ -86,6 +89,7 @@ export function TitanProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = React.useState(INITIAL_NOTES)
   const [cases, setCases] = React.useState(INITIAL_CASES)
   const [dqMid, setDqMid] = React.useState<string | null>(null)
+  const [dqTab, setDqTab] = React.useState<DqTab>("cycles")
 
   const value = React.useMemo<TitanState>(
     () => ({
@@ -168,10 +172,14 @@ export function TitanProvider({ children }: { children: React.ReactNode }) {
           }
         }),
       dqMid,
-      openDqDetails: setDqMid,
+      dqTab,
+      openDqDetails: (mid, tab = "cycles") => {
+        setDqTab(tab)
+        setDqMid(mid)
+      },
       closeDqDetails: () => setDqMid(null),
     }),
-    [reportDate, statuses, viewState, notes, cases, dqMid]
+    [reportDate, statuses, viewState, notes, cases, dqMid, dqTab]
   )
 
   return <TitanContext.Provider value={value}>{children}</TitanContext.Provider>

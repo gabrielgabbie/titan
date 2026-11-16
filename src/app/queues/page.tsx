@@ -2,7 +2,11 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { Ellipsis, Search } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -20,13 +24,13 @@ import { summarize, useRows } from "@/lib/use-rows"
 type Key = "name" | "total" | "unworked" | "wip" | "worked" | "pctWorked" | "netAmount"
 
 const COLS: { key: Key; label: string; right?: boolean; width?: string }[] = [
-  { key: "name", label: "Detection Queue" },
-  { key: "total", label: "Alerted Merchants", right: true, width: "w-[180px]" },
+  { key: "name", label: "Detection Queue", width: "min-w-[250px]" },
+  { key: "total", label: "Alerted Merchants", right: true, width: "w-[170px]" },
   { key: "unworked", label: "Unworked", right: true, width: "w-[120px]" },
-  { key: "wip", label: "WIP", right: true, width: "w-[120px]" },
-  { key: "worked", label: "Worked", right: true, width: "w-[120px]" },
-  { key: "pctWorked", label: "% Worked", right: true, width: "w-[120px]" },
-  { key: "netAmount", label: "Today's Net Amount", right: true, width: "w-[190px]" },
+  { key: "wip", label: "WIP", right: true, width: "w-[70px]" },
+  { key: "worked", label: "Worked", right: true, width: "w-[100px]" },
+  { key: "pctWorked", label: "% Worked", right: true, width: "w-[110px]" },
+  { key: "netAmount", label: "Today's Net Amount", right: true, width: "w-[180px]" },
 ]
 
 type QueueRow = { name: string } & Record<Exclude<Key, "name">, number>
@@ -37,19 +41,37 @@ const FIELDS: FilterField<QueueRow>[] = COLS.map((c) =>
     : { id: c.key, label: c.label, type: "number" as const, get: (q: QueueRow) => q[c.key as Exclude<Key, "name">] }
 )
 
-/** A count opens the queue's Alerted Merchants report, on its status tab; a zero opens nothing, so it stays plain. */
-function CountCell({ queueId, queueName, count, what, status }: { queueId: string; queueName: string; count: number; what: string; status?: string }) {
+/** View Alerted Merchants, then the rest of the queue's actions behind More Actions. */
+function QueueActions({ queueId, queueName }: { queueId: string; queueName: string }) {
   return (
-    <TableCell className={cn(gridCell, "text-right tabular-nums")}>
-      {count > 0 ? (
-        <Link href={reportHref(queueId, status)} className={linkClass} aria-label={`${count} ${what} in ${queueName}`}>
-          {count}
-        </Link>
-      ) : (
-        count
-      )}
-    </TableCell>
+    <div className="flex items-center justify-end gap-1">
+      <Link href={reportHref(queueId)} className={cn(linkClass, "whitespace-nowrap")}>
+        View Alerted Merchants
+      </Link>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon-sm" aria-label={`More actions for ${queueName}`}>
+                <Ellipsis />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>More Actions</TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent align="end">
+          {/* Next Queue and Security Report get their own pages later; until then they lead nowhere. */}
+          <DropdownMenuItem>Next Queue</DropdownMenuItem>
+          <DropdownMenuItem>Security Report</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
+}
+
+/** A status count; a non-zero count is set in medium weight so the queues with work stand out. */
+function CountCell({ count }: { count: number }) {
+  return <TableCell className={cn(gridCell, "text-right tabular-nums", count > 0 && "font-medium")}>{count}</TableCell>
 }
 
 export default function QueueViewPage() {
@@ -93,7 +115,7 @@ export default function QueueViewPage() {
         </div>
 
         <div className="surface overflow-hidden">
-          <Table>
+          <Table className="min-w-[1210px]">
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
                 {COLS.map((c) => (
@@ -109,20 +131,25 @@ export default function QueueViewPage() {
                     />
                   </TableHead>
                 ))}
+                {/* Pinned to the right, so the actions stay in view while the counts scroll under them. */}
+                <TableHead className={cn(gridHead, "bg-muted sticky right-0 z-20 w-[210px] after:pointer-events-none after:absolute after:inset-y-0 after:left-0 after:w-px after:bg-border")}>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((q, i) => (
-                <TableRow key={q.id} className={gridRow(i, "h-11")}>
+                <TableRow key={q.id} className={cn(gridRow(i, "h-11"), "hover:bg-zinc-100 has-aria-expanded:bg-zinc-100", i % 2 === 0 && "bg-card")}>
                   <TableCell className={gridCell}>
                     <QueueLink queueId={q.id} />
                   </TableCell>
-                  <CountCell queueId={q.id} queueName={q.name} count={q.total} what="alerted merchants" />
-                  <CountCell queueId={q.id} queueName={q.name} count={q.unworked} what="unworked" status="unworked" />
-                  <CountCell queueId={q.id} queueName={q.name} count={q.wip} what="WIP" status="wip" />
-                  <CountCell queueId={q.id} queueName={q.name} count={q.worked} what="worked" status="worked" />
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.total}</TableCell>
+                  <CountCell count={q.unworked} />
+                  <CountCell count={q.wip} />
+                  <CountCell count={q.worked} />
                   <TableCell className={cn(gridCell, "text-right tabular-nums")}>{q.pctWorked}%</TableCell>
                   <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatCurrency(q.netAmount)}</TableCell>
+                  <TableCell className={cn(gridCell, "sticky right-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:left-0 after:w-px after:bg-border")}>
+                    <QueueActions queueId={q.id} queueName={q.name} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -4,17 +4,19 @@ import * as React from "react"
 import { ExternalLink, Store } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 import { GridPagination, PAGE_SIZE } from "@/components/titan/alert-grid"
 import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { SortHeader } from "@/components/titan/badges"
 import { DispositionControl } from "@/components/titan/disposition-control"
+import { linkClass } from "@/components/titan/links"
+import { useTitan } from "@/lib/store"
 import { McScoreCard } from "@/components/titan/mc-score-card"
 import { PageShell } from "@/components/titan/page-shell"
 import { DqDetailsBadge, QueueLink } from "@/components/titan/links"
-import { alertsForMerchant, formatCurrency, formatSigned, getMerchant, transactionsFor, type Merchant } from "@/lib/data"
+import { REPORT_DATE, alertsForMerchant, formatCurrency, formatSigned, getMerchant, transactionsFor, type Merchant } from "@/lib/data"
 import { useSort } from "@/lib/use-sort"
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -27,11 +29,17 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function AlertStatusCard({ merchant }: { merchant: Merchant }) {
+  const { openDqDetails } = useTitan()
   const alerts = alertsForMerchant(merchant.mid)
   return (
     <Card className="gap-3 py-3">
       <CardHeader className="px-3">
         <CardTitle className="text-sm font-semibold">Alert Status</CardTitle>
+        <CardAction>
+          <button type="button" className={cn(linkClass, "text-sm")} onClick={() => openDqDetails(merchant.mid, "history")}>
+            View Alert History
+          </button>
+        </CardAction>
       </CardHeader>
       <CardContent className="px-3">
         <div className="overflow-hidden rounded-lg bg-card shadow-surface">
@@ -40,7 +48,7 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
               <TableRow className="hover:bg-muted">
                 <TableHead className={gridHead}>Detection Queue</TableHead>
                 <TableHead className={cn(gridHead, "w-[250px]")}>Violated Parameters</TableHead>
-                <TableHead className={cn(gridHead, "w-[250px]")}>Alert/Re-Alert</TableHead>
+                <TableHead className={cn(gridHead, "w-[200px]")}>Last Alerted</TableHead>
                 <TableHead className={cn(gridHead, "w-[250px]")}>Disposition</TableHead>
               </TableRow>
             </TableHeader>
@@ -51,9 +59,7 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
                     <QueueLink queueId={a.queueId} />
                   </TableCell>
                   <TableCell className={gridCell}>{a.violated.join(", ")}</TableCell>
-                  <TableCell className={gridCell}>
-                    {a.kind} {a.time}
-                  </TableCell>
+                  <TableCell className={gridCell}>{`${REPORT_DATE} ${a.time}`}</TableCell>
                   <TableCell className={gridCell}>
                     <DispositionControl merchant={merchant} alertId={a.id} />
                   </TableCell>

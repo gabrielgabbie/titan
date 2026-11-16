@@ -10,7 +10,7 @@ export function useRows(alerts: Alert[] = ALERTS): Row[] {
     const merchant = getMerchant(alert.mid)!
     const s = statuses[alert.mid]
     // Per-alert note (e.g. "Re-alerted") only applies to the re-alert row when still unworked.
-    const statusNote = s.status === "unworked" ? (alert.kind === "Re-alert" ? "Re-alerted" : undefined) : s.note
+    const statusNote = s.status === "unworked" ? (alert.kind === "Re-Alert" ? "Re-alerted" : undefined) : s.note
     return { alert, merchant, status: s.status, statusNote }
   })
 }

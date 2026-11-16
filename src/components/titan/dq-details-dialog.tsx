@@ -72,8 +72,7 @@ function OtherQueues({ param, onNavigate }: { param: ViolatedParam; onNavigate: 
         <div className="text-sm font-medium">
           {param.code} · {PARAMETERS[param.code].name}
         </div>
-        <div className="text-muted-foreground text-sm">{param.queues.length} Detection Queues</div>
-        <ul className="mt-3 flex flex-col">
+        <ul className="mt-2 flex flex-col">
           {param.queues.map((q, i) => (
             <li key={q.queueId} className={cn("py-2", i > 0 && "inset-shadow-edge-t")}>
               <QueueLink queueId={q.queueId} className="text-sm" onClick={onNavigate} />
@@ -210,20 +209,20 @@ function AlertHistory({ merchant, onNavigate }: { merchant: Merchant; onNavigate
           <TableRow className="hover:bg-muted">
             {head("date", "Date and Time")}
             {head("queue", "Detection Queue")}
-            {head("kind", "Alert/Re-alert")}
-            {head("params", "Parameters Met")}
+            {head("kind", "Alert/Re-Alert")}
+            {head("params", "Parameter")}
             {head("status", "Disposition")}
           </TableRow>
         </TableHeader>
         <TableBody>
           {sorted.map((r, i) => (
-            <TableRow key={`${r.dateTime}-${r.queueId}`} className={gridRow(i)}>
+            <TableRow key={`${r.dateTime}-${r.queueId}-${r.params.join()}`} className={gridRow(i)}>
               <TableCell className={gridCell}>{r.dateTime}</TableCell>
               <TableCell className={gridCell}>
                 <QueueLink queueId={r.queueId} onClick={onNavigate} />
               </TableCell>
               <TableCell className={gridCell}>{r.kind}</TableCell>
-              <TableCell className={gridCell}>{r.params.join(" · ")}</TableCell>
+              <TableCell className={gridCell}>{r.params[0]}</TableCell>
               <TableCell className={gridCell}>
                 <StatusBadge status={r.status} />
               </TableCell>
@@ -237,7 +236,7 @@ function AlertHistory({ merchant, onNavigate }: { merchant: Merchant; onNavigate
 
 /** Merchant-level DQ Details: every violated parameter across every detection queue that alerted on the merchant. */
 export function DqDetailsDialog() {
-  const { dqMid, closeDqDetails, statuses } = useTitan()
+  const { dqMid, dqTab, closeDqDetails, statuses } = useTitan()
   const merchant = dqMid ? getMerchant(dqMid) : undefined
 
   return (
@@ -260,7 +259,7 @@ export function DqDetailsDialog() {
               <Field label="Work Status">
                 <StatusBadge status={statuses[merchant.mid].status} />
               </Field>
-              <Field label="Alerted">{lastAlertedFor(merchant.mid)}</Field>
+              <Field label="Last Alerted">{lastAlertedFor(merchant.mid)}</Field>
               <Field label="Queues Alerted">{alertsForMerchant(merchant.mid).length}</Field>
             </div>
 
@@ -269,7 +268,7 @@ export function DqDetailsDialog() {
               <ViolatedParameters merchant={merchant} onNavigate={closeDqDetails} />
             </section>
 
-            <Tabs defaultValue="cycles" className="gap-3">
+            <Tabs key={`${dqMid}-${dqTab}`} defaultValue={dqTab} className="gap-3">
               <TabsList>
                 <TabsTrigger value="cycles">Today&apos;s Cycles</TabsTrigger>
                 <TabsTrigger value="history">Alert History</TabsTrigger>
