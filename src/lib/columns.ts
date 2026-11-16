@@ -18,6 +18,7 @@ export type ColumnId =
   | "netAmount"
   | "history"
   | "alertRealert"
+  | "alertTime"
   | "avgNetTicket"
   | "dbaName"
   | "daysSinceBoarding"
@@ -46,7 +47,7 @@ export const COLUMNS: ColumnDef[] = [
   { id: "merchantName", label: "Merchant Name", locked: true, width: 300 },
   { id: "queueName", label: "Detection Queue", locked: true, width: 280, scopes: ["merchant"] },
   { id: "mcc", label: "MCC", width: 90 },
-  { id: "violated", label: "Violated Parameters", width: 160 },
+  { id: "violated", label: "Violated Parameters", width: 190 },
   { id: "mcScore", label: "MC Score", code: "A1", align: "right", width: 120 },
   { id: "mcBand", label: "MC Band", header: "MC Band · P#C1", code: "P#C1", width: 160 },
   { id: "scoreDelta", label: "MC Score Δ", header: "MC Score Δ · P#C2", code: "P#C2", align: "right", width: 180 },
@@ -55,7 +56,8 @@ export const COLUMNS: ColumnDef[] = [
   { id: "volScore", label: "Vol %/MC Score Δ", header: "Vol % / Score Δ · P#C11", code: "P#C11", align: "right", width: 200 },
   { id: "netAmount", label: "Net Amount", code: "A23", align: "right", width: 160 },
   { id: "history", label: "History", align: "right", width: 140 },
-  { id: "alertRealert", label: "Alert/Re-Alert", width: 160 },
+  { id: "alertRealert", label: "Alert/Re-Alert", width: 150 },
+  { id: "alertTime", label: "Last Alerted", width: 200 },
   { id: "avgNetTicket", label: "Avg Net Ticket", code: "A24", align: "right", width: 140 },
   { id: "dbaName", label: "DBA Name", width: 180 },
   { id: "daysSinceBoarding", label: "Days Since Boarding", align: "right", width: 170 },
@@ -86,6 +88,7 @@ export const DEFAULT_VISIBLE: ColumnId[] = [
   "netAmount",
   "history",
   "alertRealert",
+  "alertTime",
 ]
 
 /** Full ordering of optional columns, with visibility. */

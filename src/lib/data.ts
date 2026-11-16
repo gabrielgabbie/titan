@@ -120,11 +120,11 @@ export const MERCHANTS: Merchant[] = [
     feedHealth: "4 of 4",
     history90d: 3,
     paramActuals: [
-      { code: "P#C2", actual: "+48 points", nextReAlert: "at +63" },
-      { code: "P#C5", actual: "+45 points", nextReAlert: "at +55" },
-      { code: "P#C1", actual: "High (748)", nextReAlert: null },
+      { code: "P#C2", actual: "+48 points", nextReAlert: "at +63 points" },
+      { code: "P#C5", actual: "+45 points", nextReAlert: "at +55 points" },
+      { code: "P#C1", actual: "High band (748)", nextReAlert: "at Critical band" },
       { code: "P#C7", actual: "+10 points", nextReAlert: null },
-      { code: "P#C11", actual: "Volume +38%", nextReAlert: null },
+      { code: "P#C11", actual: "+38% volume", nextReAlert: null },
     ],
     scoreStats: stats([
       [735, 742, 748],
@@ -161,9 +161,9 @@ export const MERCHANTS: Merchant[] = [
     paramActuals: [
       { code: "P#C2", actual: "+43 points", nextReAlert: null },
       { code: "P#C5", actual: "+18 points", nextReAlert: null },
-      { code: "P#C1", actual: "Critical (815)", nextReAlert: "at 900" },
+      { code: "P#C1", actual: "Critical band (815)", nextReAlert: null },
       { code: "P#C7", actual: "+22 points", nextReAlert: null },
-      { code: "P#C11", actual: "Volume +64%", nextReAlert: null },
+      { code: "P#C11", actual: "+64% volume", nextReAlert: null },
     ],
     scoreStats: stats([
       [772, 801, 815],
@@ -201,9 +201,9 @@ export const MERCHANTS: Merchant[] = [
     paramActuals: [
       { code: "P#C2", actual: "+36 points", nextReAlert: null },
       { code: "P#C5", actual: "+21 points", nextReAlert: null },
-      { code: "P#C1", actual: "Critical (821)", nextReAlert: null },
-      { code: "P#C7", actual: "+27 points", nextReAlert: "at +47" },
-      { code: "P#C11", actual: "Volume +12%", nextReAlert: null },
+      { code: "P#C1", actual: "Critical band (821)", nextReAlert: null },
+      { code: "P#C7", actual: "+27 points", nextReAlert: "at +47 points" },
+      { code: "P#C11", actual: "+12% volume", nextReAlert: null },
     ],
     scoreStats: stats([
       [794, 810, 821],
@@ -241,9 +241,9 @@ export const MERCHANTS: Merchant[] = [
     paramActuals: [
       { code: "P#C2", actual: "+31 points", nextReAlert: null },
       { code: "P#C5", actual: "+14 points", nextReAlert: null },
-      { code: "P#C1", actual: "High (677)", nextReAlert: null },
+      { code: "P#C1", actual: "High band (677)", nextReAlert: "at Critical band" },
       { code: "P#C7", actual: "+6 points", nextReAlert: null },
-      { code: "P#C11", actual: "Volume +200%", nextReAlert: "at +300%" },
+      { code: "P#C11", actual: "+200% volume", nextReAlert: "at +300% volume" },
     ],
     scoreStats: stats([
       [646, 668, 681],
@@ -281,7 +281,7 @@ export const MERCHANTS: Merchant[] = [
     paramActuals: [
       { code: "P#C2", actual: "—", nextReAlert: null },
       { code: "P#C5", actual: "+9 points", nextReAlert: null },
-      { code: "P#C1", actual: "High (642)", nextReAlert: "at 800" },
+      { code: "P#C1", actual: "High band (642)", nextReAlert: "at Critical band" },
       { code: "P#C7", actual: "—", nextReAlert: null },
       { code: "P#C11", actual: "—", nextReAlert: null },
     ],
@@ -303,16 +303,26 @@ export interface Alert {
   violated: ParamCode[]
   /** Shown per queue in the merchant's "queues" popover. */
   queueReason: string
-  kind: "Alert" | "Re-alert"
+  kind: "Alert" | "Re-Alert"
+  /** Per-parameter kind when it differs from the alert's own, e.g. a parameter re-alerting in a new alert. */
+  paramKinds?: Partial<Record<ParamCode, "Alert" | "Re-Alert">>
   time: string
 }
 
+/**
+ * Earlier alerts today on a parameter that alerted again later in the day. A disposition covers the merchant's
+ * alerts so far that day, so an earlier alert keeps the status it had before the later alert came in.
+ */
+export const EARLIER_TODAY: { mid: string; queueId: string; time: string; code: ParamCode; kind: "Alert" | "Re-Alert"; status: WorkStatus }[] = [
+  { mid: "492001837716", queueId: "mc-default-monitoring", time: "12:06:00 PM", code: "P#C5", kind: "Alert", status: "worked" },
+]
+
 export const ALERTS: Alert[] = [
   // DQ-Mastercard Default Monitoring
-  { id: "a1", queueId: "mc-default-monitoring", mid: "492001837716", violated: ["P#C2", "P#C5"], queueReason: "P#C2 · P#C5 · Avg Score +48 vs. 30 days", kind: "Alert", time: "06:12:00 PM" },
+  { id: "a1", queueId: "mc-default-monitoring", mid: "492001837716", violated: ["P#C2", "P#C5", "P#C1"], queueReason: "P#C2 · P#C5 · P#C1 · Avg Score +48 vs. 30 days", kind: "Alert", paramKinds: { "P#C5": "Re-Alert" }, time: "06:12:00 PM" },
   { id: "a2", queueId: "mc-default-monitoring", mid: "492001902245", violated: ["P#C1"], queueReason: "P#C1 · Band moved to Critical (815) from High (772)", kind: "Alert", time: "12:06:00 PM" },
   { id: "a3", queueId: "mc-default-monitoring", mid: "492001655390", violated: ["P#C7"], queueReason: "P#C7 · New high 821, +27 above prior high", kind: "Alert", time: "06:07:00 AM" },
-  { id: "a4", queueId: "mc-default-monitoring", mid: "492002114068", violated: ["P#C11"], queueReason: "P#C11 · Volume +200% with Avg Score +31", kind: "Re-alert", time: "12:06:00 PM" },
+  { id: "a4", queueId: "mc-default-monitoring", mid: "492002114068", violated: ["P#C11"], queueReason: "P#C11 · Volume +200% with Avg Score +31", kind: "Re-Alert", time: "12:06:00 PM" },
   { id: "a5", queueId: "mc-default-monitoring", mid: "492002120931", violated: ["P#C1"], queueReason: "P#C1 · First MC Band on record is High (642)", kind: "Alert", time: "06:12:00 PM" },
   // DQ-MC Critical Band Watch
   { id: "b1", queueId: "mc-critical-band-watch", mid: "492001902245", violated: ["P#C1"], queueReason: "P#C1 · Band moved up into Critical (815)", kind: "Alert", time: "12:06:00 PM" },
@@ -329,6 +339,10 @@ export const getQueue = (id: string) => QUEUES.find((q) => q.id === id)
 export const getAlert = (id: string) => ALERTS.find((a) => a.id === id)
 export const alertsForQueue = (queueId: string) => ALERTS.filter((a) => a.queueId === queueId)
 export const alertsForMerchant = (mid: string) => ALERTS.filter((a) => a.mid === mid)
+
+export const paramKind = (a: Alert, code: ParamCode) => a.paramKinds?.[code] ?? a.kind
+/** An alert reads Re-Alert only when every parameter in it re-alerted. */
+export const alertKind = (a: Alert): "Alert" | "Re-Alert" => (a.violated.every((p) => paramKind(a, p) === "Re-Alert") ? "Re-Alert" : "Alert")
 
 // ---------- MC band ----------
 // Score Bands v1.0: Very Low 0–199 · Low 200–399 · Medium 400–599 · High 600–799 · Critical 800–999
@@ -348,26 +362,29 @@ export interface Cycle {
   cycle: string
   alert: boolean
   violated: ParamCode[]
+  /** Parameters that re-alerted in this cycle in every queue that alerted on them. */
+  reAlerted: ParamCode[]
   score: number
 }
 
 export function cyclesFor(alert: Alert, merchant: Merchant): Cycle[] {
   const isEvening = alert.time.endsWith("PM") && alert.time.startsWith("06")
+  const reAlerted = alert.violated.filter((p) => paramKind(alert, p) === "Re-Alert")
   if (isEvening) {
     return [
-      { time: "06:12:00 PM", cycle: "Cycle 4 of 4", alert: true, violated: alert.violated, score: merchant.mcScore },
-      { time: "12:06:00 PM", cycle: "Cycle 3 of 4", alert: false, violated: [], score: merchant.mcScore - 3 },
+      { time: "06:12:00 PM", cycle: "Cycle 4 of 4", alert: true, violated: alert.violated, reAlerted, score: merchant.mcScore },
+      { time: "12:06:00 PM", cycle: "Cycle 3 of 4", alert: false, violated: [], reAlerted: [], score: merchant.mcScore - 3 },
     ]
   }
   return [
-    { time: "06:12:00 PM", cycle: "Cycle 4 of 4", alert: false, violated: [], score: merchant.mcScore },
-    { time: alert.time, cycle: alert.time.endsWith("AM") ? "Cycle 2 of 4" : "Cycle 3 of 4", alert: true, violated: alert.violated, score: merchant.mcScore - 4 },
+    { time: "06:12:00 PM", cycle: "Cycle 4 of 4", alert: false, violated: [], reAlerted: [], score: merchant.mcScore },
+    { time: alert.time, cycle: alert.time.endsWith("AM") ? "Cycle 2 of 4" : "Cycle 3 of 4", alert: true, violated: alert.violated, reAlerted, score: merchant.mcScore - 4 },
   ]
 }
 
 export interface AlertHistoryRow {
   dateTime: string
-  kind: "Alert" | "Re-alert"
+  kind: "Alert" | "Re-Alert"
   params: ParamCode[]
   status: WorkStatus
   daysAgo: number
@@ -378,12 +395,14 @@ export function alertHistoryFor(alert: Alert, merchant: Merchant, currentStatus:
     { dateTime: `${REPORT_DATE} ${alert.time}`, kind: alert.kind, params: alert.violated, status: currentStatus, daysAgo: 0 },
   ]
   const past: AlertHistoryRow[] = [
-    { dateTime: "09/14/2026 04:05:00 PM", kind: "Alert", params: [alert.violated[0]], status: "worked", daysAgo: 44 },
-    { dateTime: "08/02/2026 05:47:00 PM", kind: "Re-alert", params: [alert.violated[alert.violated.length - 1]], status: "worked", daysAgo: 87 },
-    { dateTime: "06/18/2026 09:12:00 AM", kind: "Alert", params: [alert.violated[0]], status: "worked", daysAgo: 132 },
-    { dateTime: "03/03/2026 02:41:00 PM", kind: "Alert", params: [alert.violated[0]], status: "worked", daysAgo: 239 },
+    // Alerts land on MC file cycles; a re-alert follows an earlier alert on the same parameter that day.
+    { dateTime: "09/14/2026 06:10:00 PM", kind: "Alert", params: [alert.violated[0]], status: "worked", daysAgo: 44 },
+    { dateTime: "08/02/2026 06:14:00 PM", kind: "Re-Alert", params: [alert.violated[Math.min(1, alert.violated.length - 1)]], status: "worked", daysAgo: 87 },
+    { dateTime: "08/02/2026 12:05:00 PM", kind: "Alert", params: [alert.violated[Math.min(1, alert.violated.length - 1)]], status: "worked", daysAgo: 87 },
+    { dateTime: "06/18/2026 06:08:00 AM", kind: "Alert", params: [alert.violated[0]], status: "worked", daysAgo: 132 },
+    { dateTime: "03/03/2026 12:07:00 PM", kind: "Alert", params: [alert.violated[0]], status: "worked", daysAgo: 239 },
   ]
-  return rows.concat(past.slice(0, Math.max(0, merchant.history90d - 1) + 2))
+  return rows.concat(past.slice(0, Math.max(0, merchant.history90d - 1) + 3))
 }
 
 // ---------- Merchant-level DQ details ----------
@@ -430,25 +449,56 @@ export function lastAlertedFor(mid: string): string {
 
 /** Today's cycles that alerted in any queue, with the parameters violated across all of them. */
 export function merchantCyclesFor(merchant: Merchant): Cycle[] {
-  const byCycle = new Map<string, Cycle>()
+  const byCycle = new Map<string, { time: string; score: number; plain: Set<ParamCode>; re: Set<ParamCode> }>()
+  const add = (cycle: string, time: string, score: number, code: ParamCode, kind: "Alert" | "Re-Alert") => {
+    const c = byCycle.get(cycle) ?? { time, score, plain: new Set<ParamCode>(), re: new Set<ParamCode>() }
+    ;(kind === "Re-Alert" ? c.re : c.plain).add(code)
+    byCycle.set(cycle, c)
+  }
   for (const a of alertsForMerchant(merchant.mid)) {
     for (const c of cyclesFor(a, merchant).filter((c) => c.alert)) {
-      const prev = byCycle.get(c.cycle)
-      const violated = new Set([...(prev?.violated ?? []), ...c.violated])
-      byCycle.set(c.cycle, { ...c, violated: PARAM_ORDER.filter((p) => violated.has(p)) })
+      for (const p of c.violated) add(c.cycle, c.time, c.score, p, paramKind(a, p))
     }
   }
-  return [...byCycle.values()].sort((a, b) => minutesOf(b.time) - minutesOf(a.time))
+  for (const e of EARLIER_TODAY.filter((e) => e.mid === merchant.mid)) {
+    add(e.time.endsWith("AM") ? "Cycle 2 of 4" : "Cycle 3 of 4", e.time, merchant.mcScore - 4, e.code, e.kind)
+  }
+  return [...byCycle.entries()]
+    .map(([cycle, c]) => ({
+      time: c.time,
+      cycle,
+      alert: true,
+      score: c.score,
+      violated: PARAM_ORDER.filter((p) => c.plain.has(p) || c.re.has(p)),
+      reAlerted: PARAM_ORDER.filter((p) => c.re.has(p) && !c.plain.has(p)),
+    }))
+    .sort((a, b) => minutesOf(b.time) - minutesOf(a.time))
 }
 
 export type MerchantAlertHistoryRow = AlertHistoryRow & { queueId: string }
 
-/** Today's alert from every queue, then the merchant's earlier alerts, newest first. */
+/**
+ * One row per parameter each time it alerted, newest first, each with that alert's own status: the latest alerts
+ * share the merchant's current status, earlier alerts today keep the status they had, earlier days show how they ended.
+ */
 export function merchantAlertHistoryFor(merchant: Merchant, currentStatus: WorkStatus): MerchantAlertHistoryRow[] {
   const alerts = alertsForMerchant(merchant.mid)
   if (!alerts.length) return []
-  const today = alerts.map((a) => ({ ...alertHistoryFor(a, merchant, currentStatus)[0], queueId: a.queueId }))
-  const past = alertHistoryFor(alerts[0], merchant, currentStatus).slice(1).map((r) => ({ ...r, queueId: alerts[0].queueId }))
+  const row = (time: string, queueId: string, code: ParamCode, kind: "Alert" | "Re-Alert", status = currentStatus): MerchantAlertHistoryRow => ({
+    dateTime: `${REPORT_DATE} ${time}`,
+    queueId,
+    kind,
+    params: [code],
+    status,
+    daysAgo: 0,
+  })
+  const today = [
+    ...alerts.flatMap((a) => a.violated.map((code) => row(a.time, a.queueId, code, paramKind(a, code)))),
+    ...EARLIER_TODAY.filter((e) => e.mid === merchant.mid).map((e) => row(e.time, e.queueId, e.code, e.kind, e.status)),
+  ].sort((a, b) => minutesOf(b.dateTime.slice(11)) - minutesOf(a.dateTime.slice(11)))
+  const past = alertHistoryFor(alerts[0], merchant, currentStatus)
+    .slice(1)
+    .map((r) => ({ ...r, queueId: alerts[0].queueId }))
   return [...today, ...past]
 }
 

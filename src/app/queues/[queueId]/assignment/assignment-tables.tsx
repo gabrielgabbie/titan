@@ -10,8 +10,8 @@ import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { PARAMETERS } from "@/lib/data"
 import type { DqAssignment } from "@/lib/dq-assignments"
 import { useSort } from "@/lib/use-sort"
+import { greenBadge } from "./styles"
 
-export const greenBadge = "bg-status-worked rounded-full text-white"
 
 function SubTable({ children }: { children: React.ReactNode }) {
   return (

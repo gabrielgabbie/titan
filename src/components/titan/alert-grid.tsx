@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils"
 import {
   PARAM_ORDER,
   QUEUES,
+  REPORT_DATE,
+  alertKind,
   alertsForMerchant,
   formatCurrency,
   formatSigned,
@@ -71,6 +73,8 @@ function sortValue(row: Row, id: ColumnId): string | number {
     case "history":
       return m.history90d
     case "alertRealert":
+      return alertKind(a)
+    case "alertTime":
       return a.time
     case "avgNetTicket":
       return m.avgNetTicket
@@ -170,7 +174,9 @@ function Cell({ row, col }: { row: Row; col: ColumnDef }) {
     case "history":
       return `${m.history90d} in 90d`
     case "alertRealert":
-      return `${a.kind} ${a.time}`
+      return alertKind(a)
+    case "alertTime":
+      return `${REPORT_DATE} ${a.time}`
     case "avgNetTicket":
       return formatCurrency(m.avgNetTicket)
     case "dbaName":
@@ -212,7 +218,7 @@ function filterFields(scope: ViewScope): FilterField<Row>[] {
         return [{ id: c.id, label, type: "enum", options: PARAM_ORDER, get: (r) => r.alert.violated }]
       case "alertRealert":
         return [
-          { id: "alertKind", label: "Alert/Re-Alert", type: "enum", options: ["Alert", "Re-alert"], get: (r) => r.alert.kind },
+          { id: "alertKind", label: "Alert/Re-Alert", type: "enum", options: ["Alert", "Re-Alert"], get: (r) => alertKind(r.alert) },
         ]
       default:
         return [
