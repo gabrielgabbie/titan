@@ -18,6 +18,8 @@ import { PageShell } from "@/components/titan/page-shell"
 import { DqDetailsBadge, QueueLink } from "@/components/titan/links"
 import { REPORT_DATE, alertsForMerchant, formatCurrency, formatSigned, getMerchant, transactionsFor, type Merchant } from "@/lib/data"
 import { useSort } from "@/lib/use-sort"
+import { EmptyRow } from "@/components/titan/empty-row"
+import { emptyMessage } from "@/lib/empty-message"
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -53,6 +55,7 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {alerts.length === 0 && <EmptyRow colSpan={4}>{emptyMessage("data")}</EmptyRow>}
               {alerts.map((a, i) => (
                 <TableRow key={a.id} className={gridRow(i, "h-10")}>
                   <TableCell className={gridCell}>{`${REPORT_DATE} ${a.time}`}</TableCell>
@@ -112,6 +115,7 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {rows.length === 0 && <EmptyRow colSpan={5}>{emptyMessage("data")}</EmptyRow>}
               {rows.map((t, i) => (
                 <TableRow key={`${t.dateTime}-${i}`} className={gridRow(i, "h-9")}>
                   <TableCell className={gridCell}>{t.dateTime}</TableCell>
