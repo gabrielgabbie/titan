@@ -11,6 +11,8 @@ import { PARAMETERS } from "@/lib/data"
 import type { DqAssignment } from "@/lib/dq-assignments"
 import { useSort } from "@/lib/use-sort"
 import { greenBadge } from "./styles"
+import { EmptyRow } from "@/components/titan/empty-row"
+import { emptyMessage } from "@/lib/empty-message"
 
 
 function SubTable({ children }: { children: React.ReactNode }) {
@@ -48,6 +50,7 @@ export function FiltersTable({ filters }: { filters: DqAssignment["filters"] }) 
         </TableRow>
       </TableHeader>
       <TableBody>
+        {sorted.length === 0 && <EmptyRow colSpan={3}>{emptyMessage("data")}</EmptyRow>}
         {sorted.map((f, i) => (
           <TableRow key={f.filter} className={gridRow(i, f.note ? "h-14" : "h-11")}>
             <TableCell className={gridCell}>{f.filter}</TableCell>
@@ -89,6 +92,7 @@ export function ParametersTable({ parameters }: { parameters: DqAssignment["para
         </TableRow>
       </TableHeader>
       <TableBody>
+        {sorted.length === 0 && <EmptyRow colSpan={6}>{emptyMessage("data")}</EmptyRow>}
         {sorted.map((p, i) => (
           <TableRow key={p.code} className={gridRow(i, "h-[52px]")}>
             <TableCell className={gridCell}>

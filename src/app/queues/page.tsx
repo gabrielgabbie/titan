@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils"
 import { SortHeader, type SortDir } from "@/components/titan/badges"
 import { FilterBuilder } from "@/components/titan/filter-builder"
 import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
-import { applyFilters, type FilterField, type FilterRule } from "@/lib/filters"
+import { emptyMessage } from "@/lib/empty-message"
+import { applyFilters, isComplete, type FilterField, type FilterRule } from "@/lib/filters"
 import { PageShell } from "@/components/titan/page-shell"
 import { QueueLink, linkClass, reportHref } from "@/components/titan/links"
 import { ReportDatePicker } from "@/components/titan/toolbar"
@@ -157,7 +158,7 @@ export default function QueueViewPage() {
           {/* Outside the table, so it centers in the visible grid rather than across its full scroll width. */}
           {data.length === 0 && (
             <div className="text-muted-foreground flex h-20 items-center justify-center text-sm">
-              No queues match your search.
+              {emptyMessage("queues", { filtered: rules.some(isComplete), searched: !!query.trim(), loaded: QUEUES.length > 0 })}
             </div>
           )}
         </div>

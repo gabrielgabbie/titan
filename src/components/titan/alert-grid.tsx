@@ -33,7 +33,8 @@ import {
 } from "@/lib/data"
 import { columnById, columnsForScope, lockedColumns, type ColumnDef, type ColumnId, type Row, type ViewScope } from "@/lib/columns"
 import { useTitan } from "@/lib/store"
-import { applyFilters, type FilterField, type FilterRule } from "@/lib/filters"
+import { emptyMessage } from "@/lib/empty-message"
+import { applyFilters, isComplete, type FilterField, type FilterRule } from "@/lib/filters"
 import { CountBadge, McBandBadge, STATUS_LABEL, SortHeader, type SortDir } from "./badges"
 import { gridCell, gridHead } from "./grid"
 import { FilterBuilder } from "./filter-builder"
@@ -352,6 +353,8 @@ export function AlertGrid({
     })
   }
 
+  const empty = emptyMessage("alerted merchants", { filtered: rules.some(isComplete), searched: !!q, loaded: rows.length > 0 })
+
   // Pagination shows only when the rows outgrow one default page; otherwise every row shows, whatever page size is set.
   const paged = paginate && filtered.length > PAGE_SIZE
   const pages = paged ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1
@@ -448,7 +451,7 @@ export function AlertGrid({
         {/* Outside the table, so it centers in the visible grid rather than across its full scroll width. */}
         {visible.length === 0 && (
           <div className="text-muted-foreground flex h-24 items-center justify-center text-sm">
-            No merchants match the current filters.
+            {empty}
           </div>
         )}
       </div>

@@ -32,6 +32,8 @@ import {
 } from "@/lib/data"
 import { useTitan } from "@/lib/store"
 import { useSort } from "@/lib/use-sort"
+import { EmptyRow } from "@/components/titan/empty-row"
+import { emptyMessage } from "@/lib/empty-message"
 import { SortHeader, StatusBadge } from "./badges"
 import { gridCell, gridHead, gridRow } from "./grid"
 import { QueueLink, linkClass } from "./links"
@@ -108,6 +110,7 @@ function ViolatedParameters({ merchant, onNavigate }: { merchant: Merchant; onNa
         </TableRow>
       </TableHeader>
       <TableBody>
+        {sorted.length === 0 && <EmptyRow colSpan={4}>{emptyMessage("data")}</EmptyRow>}
         {sorted.map((r, i) => (
           <TableRow key={r.code} className={gridRow(i)}>
             <TableCell className={gridCell}>
@@ -160,6 +163,7 @@ function TodaysCycles({ merchant, onNavigate }: { merchant: Merchant; onNavigate
         </TableRow>
       </TableHeader>
       <TableBody>
+        {sorted.length === 0 && <EmptyRow colSpan={5}>{emptyMessage("data")}</EmptyRow>}
         {sorted.map((c, i) => (
           <TableRow key={`${c.cycle}-${c.queueId}`} className={gridRow(i)}>
             <TableCell className={gridCell}>{c.time}</TableCell>
@@ -181,7 +185,8 @@ const RANGES = { "90": "Last 90 days", "180": "Last 180 days", "365": "Last 12 m
 function AlertHistory({ merchant, onNavigate }: { merchant: Merchant; onNavigate: () => void }) {
   const { statuses } = useTitan()
   const [range, setRange] = React.useState<keyof typeof RANGES>("90")
-  const rows = merchantAlertHistoryFor(merchant, statuses[merchant.mid].status).filter((r) => r.daysAgo <= Number(range))
+  const all = merchantAlertHistoryFor(merchant, statuses[merchant.mid].status)
+  const rows = all.filter((r) => r.daysAgo <= Number(range))
   const { sorted, toggle, dirOf } = useSort(rows, {
     date: (r) => -r.daysAgo,
     queue: (r) => getQueue(r.queueId)?.name ?? "",
@@ -222,6 +227,7 @@ function AlertHistory({ merchant, onNavigate }: { merchant: Merchant; onNavigate
           </TableRow>
         </TableHeader>
         <TableBody>
+          {sorted.length === 0 && <EmptyRow colSpan={5}>{emptyMessage("data", { filtered: all.length > 0 })}</EmptyRow>}
           {sorted.map((r, i) => (
             <TableRow key={`${r.dateTime}-${r.queueId}-${r.params.join()}`} className={gridRow(i)}>
               <TableCell className={gridCell}>{r.dateTime}</TableCell>

@@ -157,7 +157,7 @@ export function FilterBuilder<T>({
         </div>
         <div className="flex items-center justify-between inset-shadow-edge-t px-2 py-2">
           <Button variant="ghost" size="sm" className="text-link hover:text-link" onClick={() => onChange([...rules, newRule()])}>
-            <Plus /> Add filter
+            <Plus /> Add Filter
           </Button>
           <Button
             variant="ghost"
@@ -166,7 +166,7 @@ export function FilterBuilder<T>({
             disabled={rules.length === 0}
             onClick={() => onChange([])}
           >
-            <X /> Remove all
+            <X /> Remove All
           </Button>
         </div>
       </PopoverContent>
