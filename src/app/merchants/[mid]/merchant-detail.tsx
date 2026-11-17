@@ -46,20 +46,20 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
+                <TableHead className={cn(gridHead, "w-[200px]")}>Last Alerted</TableHead>
                 <TableHead className={gridHead}>Detection Queue</TableHead>
                 <TableHead className={cn(gridHead, "w-[250px]")}>Violated Parameters</TableHead>
-                <TableHead className={cn(gridHead, "w-[200px]")}>Last Alerted</TableHead>
                 <TableHead className={cn(gridHead, "w-[250px]")}>Disposition</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {alerts.map((a, i) => (
                 <TableRow key={a.id} className={gridRow(i, "h-10")}>
+                  <TableCell className={gridCell}>{`${REPORT_DATE} ${a.time}`}</TableCell>
                   <TableCell className={gridCell}>
                     <QueueLink queueId={a.queueId} />
                   </TableCell>
                   <TableCell className={gridCell}>{a.violated.join(", ")}</TableCell>
-                  <TableCell className={gridCell}>{`${REPORT_DATE} ${a.time}`}</TableCell>
                   <TableCell className={gridCell}>
                     <DispositionControl merchant={merchant} alertId={a.id} />
                   </TableCell>
