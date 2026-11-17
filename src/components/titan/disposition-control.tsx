@@ -7,7 +7,6 @@ import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -32,18 +31,15 @@ export function DispositionControl({
   const [open, setOpen] = React.useState(false)
   const [wip, setWip] = React.useState(status === "wip")
   const [disposition, setDisposition] = React.useState<string>("")
-  const [other, setOther] = React.useState("")
 
   React.useEffect(() => {
     if (open) {
       setWip(status === "wip")
       setDisposition("")
-      setOther("")
     }
   }, [open, status])
 
-  const isOther = disposition.startsWith("Other")
-  const canSubmit = (disposition && (!isOther || other.trim())) || wip !== (status === "wip")
+  const canSubmit = !!disposition || wip !== (status === "wip")
 
   return (
     <div className="flex flex-col gap-1">
@@ -70,7 +66,7 @@ export function DispositionControl({
               className="flex flex-col gap-3 p-2.5"
               onSubmit={(e) => {
                 e.preventDefault()
-                submitDisposition(merchant.mid, { wip, disposition: disposition || undefined, other })
+                submitDisposition(merchant.mid, { wip, disposition: disposition || undefined })
                 toast.success(
                   disposition ? "Disposition submitted." : wip ? "Marked as work in progress." : "Work in progress removed."
                 )
@@ -101,14 +97,6 @@ export function DispositionControl({
                     </div>
                   ))}
                 </RadioGroup>
-                <Input
-                  placeholder="Describe the disposition"
-                  value={other}
-                  onChange={(e) => setOther(e.target.value)}
-                  disabled={!isOther}
-                  className="ml-6 w-[calc(100%-1.5rem)]"
-                  aria-label="Other disposition"
-                />
               </div>
 
               <div className="flex justify-end gap-2">

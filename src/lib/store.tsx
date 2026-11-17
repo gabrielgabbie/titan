@@ -30,7 +30,7 @@ interface TitanState {
 
   statuses: Record<string, MerchantStatus>
   /** Apply Mark Work / Disposition. A disposition marks Worked on all of the merchant's alerts in every queue. */
-  submitDisposition: (mid: string, input: { wip: boolean; disposition?: string; other?: string }) => void
+  submitDisposition: (mid: string, input: { wip: boolean; disposition?: string }) => void
 
   viewState: Record<ViewScope, ViewState>
   setActiveView: (scope: ViewScope, id: string) => void
@@ -96,12 +96,11 @@ export function TitanProvider({ children }: { children: React.ReactNode }) {
       reportDate,
       setReportDate,
       statuses,
-      submitDisposition: (mid, { wip, disposition, other }) => {
+      submitDisposition: (mid, { wip, disposition }) => {
         setStatuses((prev) => {
           let next: MerchantStatus
           if (disposition) {
-            const label = disposition.startsWith("Other") ? other?.trim() || "Other" : dispositionShort(disposition)
-            next = { status: "worked", note: `${label} by ${CURRENT_USER.name}` }
+            next = { status: "worked", note: `${dispositionShort(disposition)} by ${CURRENT_USER.name}` }
           } else if (wip) {
             next = { status: "wip", note: `Locked by ${CURRENT_USER.name}` }
           } else {

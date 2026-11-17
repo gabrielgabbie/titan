@@ -447,32 +447,37 @@ export function lastAlertedFor(mid: string): string {
   return latest ? `${REPORT_DATE} ${latest.time}` : "—"
 }
 
-/** Today's cycles that alerted in any queue, with the parameters violated across all of them. */
-export function merchantCyclesFor(merchant: Merchant): Cycle[] {
-  const byCycle = new Map<string, { time: string; score: number; plain: Set<ParamCode>; re: Set<ParamCode> }>()
-  const add = (cycle: string, time: string, score: number, code: ParamCode, kind: "Alert" | "Re-Alert") => {
-    const c = byCycle.get(cycle) ?? { time, score, plain: new Set<ParamCode>(), re: new Set<ParamCode>() }
-    ;(kind === "Re-Alert" ? c.re : c.plain).add(code)
-    byCycle.set(cycle, c)
+export type MerchantCycleRow = Cycle & { queueId: string }
+
+/** Today's cycles that alerted, one row per cycle and detection queue, with the parameters that queue alerted on. */
+export function merchantCyclesFor(merchant: Merchant): MerchantCycleRow[] {
+  const rows = new Map<string, { time: string; cycle: string; queueId: string; score: number; plain: Set<ParamCode>; re: Set<ParamCode> }>()
+  const add = (cycle: string, time: string, queueId: string, score: number, code: ParamCode, kind: "Alert" | "Re-Alert") => {
+    const key = `${cycle}|${queueId}`
+    const r = rows.get(key) ?? { time, cycle, queueId, score, plain: new Set<ParamCode>(), re: new Set<ParamCode>() }
+    ;(kind === "Re-Alert" ? r.re : r.plain).add(code)
+    rows.set(key, r)
   }
   for (const a of alertsForMerchant(merchant.mid)) {
     for (const c of cyclesFor(a, merchant).filter((c) => c.alert)) {
-      for (const p of c.violated) add(c.cycle, c.time, c.score, p, paramKind(a, p))
+      for (const p of c.violated) add(c.cycle, c.time, a.queueId, c.score, p, paramKind(a, p))
     }
   }
   for (const e of EARLIER_TODAY.filter((e) => e.mid === merchant.mid)) {
-    add(e.time.endsWith("AM") ? "Cycle 2 of 4" : "Cycle 3 of 4", e.time, merchant.mcScore - 4, e.code, e.kind)
+    add(e.time.endsWith("AM") ? "Cycle 2 of 4" : "Cycle 3 of 4", e.time, e.queueId, merchant.mcScore - 4, e.code, e.kind)
   }
-  return [...byCycle.entries()]
-    .map(([cycle, c]) => ({
-      time: c.time,
-      cycle,
+  const order = (id: string) => QUEUES.findIndex((q) => q.id === id)
+  return [...rows.values()]
+    .map((r) => ({
+      time: r.time,
+      cycle: r.cycle,
+      queueId: r.queueId,
       alert: true,
-      score: c.score,
-      violated: PARAM_ORDER.filter((p) => c.plain.has(p) || c.re.has(p)),
-      reAlerted: PARAM_ORDER.filter((p) => c.re.has(p) && !c.plain.has(p)),
+      score: r.score,
+      violated: PARAM_ORDER.filter((p) => r.plain.has(p) || r.re.has(p)),
+      reAlerted: PARAM_ORDER.filter((p) => r.re.has(p) && !r.plain.has(p)),
     }))
-    .sort((a, b) => minutesOf(b.time) - minutesOf(a.time))
+    .sort((a, b) => minutesOf(b.time) - minutesOf(a.time) || order(a.queueId) - order(b.queueId))
 }
 
 export type MerchantAlertHistoryRow = AlertHistoryRow & { queueId: string }
@@ -576,7 +581,6 @@ export const DISPOSITIONS = [
   "Contact Merchant",
   "Hold Funds",
   "Termination Recommended",
-  "Other (Specify)",
 ] as const
 
 export const CURRENT_USER = { name: "Dana Ruiz", email: "dana.ruiz@example.com" }

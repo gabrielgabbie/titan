@@ -130,10 +130,11 @@ function ViolatedParameters({ merchant, onNavigate }: { merchant: Merchant; onNa
   )
 }
 
-function TodaysCycles({ merchant }: { merchant: Merchant }) {
+function TodaysCycles({ merchant, onNavigate }: { merchant: Merchant; onNavigate: () => void }) {
   const { sorted, toggle, dirOf } = useSort(merchantCyclesFor(merchant), {
     time: (r) => r.cycle,
     cycle: (r) => r.cycle,
+    queue: (r) => getQueue(r.queueId)?.name ?? "",
     violated: (r) => r.violated.join(","),
     score: (r) => r.score,
   })
@@ -148,6 +149,9 @@ function TodaysCycles({ merchant }: { merchant: Merchant }) {
             <SortHeader label="MC File Cycle" dir={dirOf("cycle")} onClick={() => toggle("cycle")} />
           </TableHead>
           <TableHead className={gridHead}>
+            <SortHeader label="Detection Queue" dir={dirOf("queue")} onClick={() => toggle("queue")} />
+          </TableHead>
+          <TableHead className={gridHead}>
             <SortHeader label="Violated Parameters" dir={dirOf("violated")} onClick={() => toggle("violated")} />
           </TableHead>
           <TableHead className={cn(gridHead, "text-right")}>
@@ -157,9 +161,12 @@ function TodaysCycles({ merchant }: { merchant: Merchant }) {
       </TableHeader>
       <TableBody>
         {sorted.map((c, i) => (
-          <TableRow key={c.cycle} className={gridRow(i)}>
+          <TableRow key={`${c.cycle}-${c.queueId}`} className={gridRow(i)}>
             <TableCell className={gridCell}>{c.time}</TableCell>
             <TableCell className={gridCell}>{c.cycle}</TableCell>
+            <TableCell className={gridCell}>
+              <QueueLink queueId={c.queueId} onClick={onNavigate} />
+            </TableCell>
             <TableCell className={gridCell}>{c.violated.join(", ")}</TableCell>
             <TableCell className={cn(gridCell, "text-right tabular-nums")}>{c.score}</TableCell>
           </TableRow>
@@ -275,7 +282,7 @@ export function DqDetailsDialog() {
               </TabsList>
               <TabsContent value="cycles" className="flex flex-col gap-3">
                 <h3 className="text-sm font-semibold">Today&apos;s Cycles</h3>
-                <TodaysCycles merchant={merchant} />
+                <TodaysCycles merchant={merchant} onNavigate={closeDqDetails} />
               </TabsContent>
               <TabsContent value="history">
                 <AlertHistory merchant={merchant} onNavigate={closeDqDetails} />
