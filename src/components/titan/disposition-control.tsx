@@ -15,6 +15,8 @@ import { DISPOSITIONS, type Merchant } from "@/lib/data"
 import { useTitan } from "@/lib/store"
 import { STATUS_BG, STATUS_LABEL, StatusIcon } from "./badges"
 
+const POPOVER_WIDTH = 360
+
 /** Status split-button (opens the Mark Work and Disposition popover) + status note. */
 export function DispositionControl({
   merchant,
@@ -29,6 +31,14 @@ export function DispositionControl({
   const { statuses, submitDisposition } = useTitan()
   const { status } = statuses[merchant.mid]
   const [open, setOpen] = React.useState(false)
+  // Align the popover's left edge with the button; when it would not fit on screen, align right edges instead.
+  const anchorRef = React.useRef<HTMLDivElement>(null)
+  const [align, setAlign] = React.useState<"start" | "end">("start")
+  const onOpenChange = (next: boolean) => {
+    const rect = anchorRef.current?.getBoundingClientRect()
+    if (next && rect) setAlign(rect.left + POPOVER_WIDTH + 8 > document.documentElement.clientWidth ? "end" : "start")
+    setOpen(next)
+  }
   const [wip, setWip] = React.useState(status === "wip")
   const [disposition, setDisposition] = React.useState<string>("")
 
@@ -44,9 +54,9 @@ export function DispositionControl({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={onOpenChange}>
           <PopoverAnchor asChild>
-            <ButtonGroup className={cn("rounded-md text-white", STATUS_BG[status])}>
+            <ButtonGroup ref={anchorRef} className={cn("rounded-md text-white", STATUS_BG[status])}>
               <PopoverTrigger asChild>
                 <Button size="xs" className={cn("min-w-[75px] justify-center text-white shadow-none", STATUS_BG[status])}>
                   <StatusIcon status={status} />
@@ -61,7 +71,7 @@ export function DispositionControl({
               </PopoverTrigger>
             </ButtonGroup>
           </PopoverAnchor>
-          <PopoverContent align="start" className="w-[360px] p-0">
+          <PopoverContent align={align} className="p-0" style={{ width: POPOVER_WIDTH }}>
             <form
               className="flex flex-col gap-3 p-2.5"
               onSubmit={(e) => {
