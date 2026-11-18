@@ -310,7 +310,7 @@ export interface Alert {
 }
 
 /**
- * Earlier alerts today on a parameter that alerted again later in the day. A disposition covers the merchant's
+ * Earlier alerts today on a parameter that alerted again later in the day. A disposition covers the queue's
  * alerts so far that day, so an earlier alert keeps the status it had before the later alert came in.
  */
 export const EARLIER_TODAY: { mid: string; queueId: string; time: string; code: ParamCode; kind: "Alert" | "Re-Alert"; status: WorkStatus }[] = [
@@ -484,12 +484,12 @@ export type MerchantAlertHistoryRow = AlertHistoryRow & { queueId: string }
 
 /**
  * One row per parameter each time it alerted, newest first, each with that alert's own status: the latest alerts
- * share the merchant's current status, earlier alerts today keep the status they had, earlier days show how they ended.
+ * show their queue's current status, earlier alerts today keep the status they had, earlier days show how they ended.
  */
-export function merchantAlertHistoryFor(merchant: Merchant, currentStatus: WorkStatus): MerchantAlertHistoryRow[] {
+export function merchantAlertHistoryFor(merchant: Merchant, statusFor: (queueId: string) => WorkStatus): MerchantAlertHistoryRow[] {
   const alerts = alertsForMerchant(merchant.mid)
   if (!alerts.length) return []
-  const row = (time: string, queueId: string, code: ParamCode, kind: "Alert" | "Re-Alert", status = currentStatus): MerchantAlertHistoryRow => ({
+  const row = (time: string, queueId: string, code: ParamCode, kind: "Alert" | "Re-Alert", status = statusFor(queueId)): MerchantAlertHistoryRow => ({
     dateTime: `${REPORT_DATE} ${time}`,
     queueId,
     kind,
@@ -501,7 +501,7 @@ export function merchantAlertHistoryFor(merchant: Merchant, currentStatus: WorkS
     ...alerts.flatMap((a) => a.violated.map((code) => row(a.time, a.queueId, code, paramKind(a, code)))),
     ...EARLIER_TODAY.filter((e) => e.mid === merchant.mid).map((e) => row(e.time, e.queueId, e.code, e.kind, e.status)),
   ].sort((a, b) => minutesOf(b.dateTime.slice(11)) - minutesOf(a.dateTime.slice(11)))
-  const past = alertHistoryFor(alerts[0], merchant, currentStatus)
+  const past = alertHistoryFor(alerts[0], merchant, statusFor(alerts[0].queueId))
     .slice(1)
     .map((r) => ({ ...r, queueId: alerts[0].queueId }))
   return [...today, ...past]

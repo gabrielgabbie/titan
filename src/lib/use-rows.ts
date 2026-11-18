@@ -8,7 +8,7 @@ export function useRows(alerts: Alert[] = ALERTS): Row[] {
   const { statuses } = useTitan()
   return alerts.map((alert) => {
     const merchant = getMerchant(alert.mid)!
-    const s = statuses[alert.mid]
+    const s = statuses[alert.id]
     // Per-alert note (e.g. "Re-alerted") only applies to the re-alert row when still unworked.
     const statusNote = s.status === "unworked" ? (alert.kind === "Re-Alert" ? "Re-alerted" : undefined) : s.note
     return { alert, merchant, status: s.status, statusNote }

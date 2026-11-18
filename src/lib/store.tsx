@@ -5,7 +5,8 @@ import {
   CURRENT_USER,
   INITIAL_CASES,
   INITIAL_NOTES,
-  MERCHANTS,
+  ALERTS,
+  getMerchant,
   formatDateTime,
   type Case,
   type Note,
@@ -13,10 +14,13 @@ import {
 } from "./data"
 import { defaultColumnSettings, type SavedView, type ViewScope } from "./columns"
 
-interface MerchantStatus {
+interface AlertStatus {
   status: WorkStatus
   note?: string
 }
+
+/** Least-worked first: a merchant is Unworked while any queue is, WIP while any is in progress, then Worked. */
+const STATUS_ORDER: WorkStatus[] = ["unworked", "wip", "worked"]
 
 interface ViewState {
   views: SavedView[]
@@ -28,9 +32,12 @@ interface TitanState {
   reportDate: Date
   setReportDate: (d: Date) => void
 
-  statuses: Record<string, MerchantStatus>
-  /** Apply Mark Work / Disposition. A disposition marks Worked on all of the merchant's alerts in every queue. */
-  submitDisposition: (mid: string, input: { wip: boolean; disposition?: string }) => void
+  /** Work status per alert, i.e. per merchant per detection queue, keyed by alert id. */
+  statuses: Record<string, AlertStatus>
+  /** The merchant's status across its queues: the least-worked one. */
+  merchantStatus: (mid: string) => WorkStatus
+  /** Apply Mark Work / Disposition to one alert (one queue) only. */
+  submitDisposition: (alertId: string, input: { wip: boolean; disposition?: string }) => void
 
   viewState: Record<ViewScope, ViewState>
   setActiveView: (scope: ViewScope, id: string) => void
@@ -79,8 +86,13 @@ const dispositionShort = (d: string) => {
 
 export function TitanProvider({ children }: { children: React.ReactNode }) {
   const [reportDate, setReportDate] = React.useState(() => new Date(2026, 9, 28))
-  const [statuses, setStatuses] = React.useState<Record<string, MerchantStatus>>(() =>
-    Object.fromEntries(MERCHANTS.map((m) => [m.mid, { status: m.initialStatus, note: m.statusNote }]))
+  const [statuses, setStatuses] = React.useState<Record<string, AlertStatus>>(() =>
+    Object.fromEntries(
+      ALERTS.map((a) => {
+        const m = getMerchant(a.mid)!
+        return [a.id, { status: m.initialStatus, note: m.statusNote }]
+      })
+    )
   )
   const [viewState, setViewState] = React.useState<Record<ViewScope, ViewState>>(() => ({
     queue: initialViews("queue"),
@@ -96,9 +108,13 @@ export function TitanProvider({ children }: { children: React.ReactNode }) {
       reportDate,
       setReportDate,
       statuses,
-      submitDisposition: (mid, { wip, disposition }) => {
+      merchantStatus: (mid) => {
+        const own = ALERTS.filter((a) => a.mid === mid).map((a) => statuses[a.id].status)
+        return STATUS_ORDER.find((st) => own.includes(st)) ?? "unworked"
+      },
+      submitDisposition: (alertId, { wip, disposition }) => {
         setStatuses((prev) => {
-          let next: MerchantStatus
+          let next: AlertStatus
           if (disposition) {
             next = { status: "worked", note: `${dispositionShort(disposition)} by ${CURRENT_USER.name}` }
           } else if (wip) {
@@ -106,7 +122,7 @@ export function TitanProvider({ children }: { children: React.ReactNode }) {
           } else {
             next = { status: "unworked" }
           }
-          return { ...prev, [mid]: next }
+          return { ...prev, [alertId]: next }
         })
       },
       viewState,
