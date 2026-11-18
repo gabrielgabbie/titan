@@ -185,7 +185,8 @@ const RANGES = { "90": "Last 90 days", "180": "Last 180 days", "365": "Last 12 m
 function AlertHistory({ merchant, onNavigate }: { merchant: Merchant; onNavigate: () => void }) {
   const { statuses } = useTitan()
   const [range, setRange] = React.useState<keyof typeof RANGES>("90")
-  const all = merchantAlertHistoryFor(merchant, statuses[merchant.mid].status)
+  const alerts = alertsForMerchant(merchant.mid)
+  const all = merchantAlertHistoryFor(merchant, (queueId) => statuses[alerts.find((a) => a.queueId === queueId)!.id].status)
   const rows = all.filter((r) => r.daysAgo <= Number(range))
   const { sorted, toggle, dirOf } = useSort(rows, {
     date: (r) => -r.daysAgo,
@@ -249,7 +250,7 @@ function AlertHistory({ merchant, onNavigate }: { merchant: Merchant; onNavigate
 
 /** Merchant-level DQ Details: every violated parameter across every detection queue that alerted on the merchant. */
 export function DqDetailsDialog() {
-  const { dqMid, dqTab, closeDqDetails, statuses } = useTitan()
+  const { dqMid, dqTab, closeDqDetails, merchantStatus } = useTitan()
   const merchant = dqMid ? getMerchant(dqMid) : undefined
 
   return (
@@ -270,7 +271,7 @@ export function DqDetailsDialog() {
               </Field>
               <Field label="MID">{merchant.mid}</Field>
               <Field label="Work Status">
-                <StatusBadge status={statuses[merchant.mid].status} />
+                <StatusBadge status={merchantStatus(merchant.mid)} />
               </Field>
               <Field label="Last Alerted">{lastAlertedFor(merchant.mid)}</Field>
               <Field label="Queues Alerted">{alertsForMerchant(merchant.mid).length}</Field>

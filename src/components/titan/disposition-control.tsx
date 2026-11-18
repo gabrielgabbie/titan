@@ -29,7 +29,7 @@ export function DispositionControl({
   note?: string
 }) {
   const { statuses, submitDisposition } = useTitan()
-  const { status } = statuses[merchant.mid]
+  const { status } = statuses[alertId]
   const [open, setOpen] = React.useState(false)
   // Align the popover's left edge with the button; when it would not fit on screen, align right edges instead.
   const anchorRef = React.useRef<HTMLDivElement>(null)
@@ -76,7 +76,7 @@ export function DispositionControl({
               className="flex flex-col gap-3 p-2.5"
               onSubmit={(e) => {
                 e.preventDefault()
-                submitDisposition(merchant.mid, { wip, disposition: disposition || undefined })
+                submitDisposition(alertId, { wip, disposition: disposition || undefined })
                 toast.success(
                   disposition ? "Disposition submitted." : wip ? "Marked as work in progress." : "Work in progress removed."
                 )
