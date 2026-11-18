@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ExternalLink, Store } from "lucide-react"
+import { CircleHelp, ExternalLink, Store } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,9 +16,10 @@ import { useTitan } from "@/lib/store"
 import { McScoreCard } from "@/components/titan/mc-score-card"
 import { PageShell } from "@/components/titan/page-shell"
 import { DqDetailsBadge, QueueLink } from "@/components/titan/links"
-import { REPORT_DATE, alertsForMerchant, formatCurrency, formatSigned, getMerchant, transactionsFor, type Merchant } from "@/lib/data"
+import { REPORT_DATE, alertsForMerchant, MC_REASON_CODES, formatCurrency, getMerchant, transactionsFor, type Merchant } from "@/lib/data"
 import { useSort } from "@/lib/use-sort"
 import { EmptyRow } from "@/components/titan/empty-row"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { emptyMessage } from "@/lib/empty-message"
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -48,6 +49,7 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
+                <TableHead className={cn(gridHead, "w-[120px]")}>Report Date</TableHead>
                 <TableHead className={cn(gridHead, "w-[200px]")}>Last Alerted</TableHead>
                 <TableHead className={gridHead}>Detection Queue</TableHead>
                 <TableHead className={cn(gridHead, "w-[250px]")}>Violated Parameters</TableHead>
@@ -55,9 +57,10 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {alerts.length === 0 && <EmptyRow colSpan={4}>{emptyMessage("data")}</EmptyRow>}
+              {alerts.length === 0 && <EmptyRow colSpan={5}>{emptyMessage("data")}</EmptyRow>}
               {alerts.map((a, i) => (
                 <TableRow key={a.id} className={gridRow(i, "h-10")}>
+                  <TableCell className={gridCell}>{REPORT_DATE}</TableCell>
                   <TableCell className={gridCell}>{`${REPORT_DATE} ${a.time}`}</TableCell>
                   <TableCell className={gridCell}>
                     <QueueLink queueId={a.queueId} />
@@ -76,15 +79,44 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
   )
 }
 
+/** Descriptions come from source data; always show them with a capital first letter. */
+const sentenceCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+/** An MC reason code, with a help icon that shows the code's description on hover or focus. */
+function ReasonCode({ code }: { code: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      {code}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" className="cursor-pointer rounded-sm" aria-label={`Description of ${code}`}>
+            <CircleHelp className="size-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          {sentenceCase(MC_REASON_CODES[code] ?? "")}
+        </TooltipContent>
+      </Tooltip>
+    </span>
+  )
+}
+
 function TransactionHistory({ merchant }: { merchant: Merchant }) {
   const all = React.useMemo(() => transactionsFor(merchant), [merchant])
   const [page, setPage] = React.useState(1)
   const { sorted, toggle, dirOf } = useSort(all, {
+    report: (t) => t.reportDate,
     date: (t) => -all.indexOf(t),
+    card: (t) => t.card,
+    country: (t) => t.country,
+    account: (t) => t.account,
+    bin: (t) => t.bin,
     type: (t) => t.type,
     amount: (t) => t.amount,
+    rc: (t) => t.responseCode,
+    file: (t) => t.fileSource,
     score: (t) => t.score,
-    change: (t) => t.change,
+    reason: (t) => t.reasonCode,
   })
   const pageSize = PAGE_SIZE
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize))
@@ -107,22 +139,38 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
-                {head("date", "Date and Time")}
-                {head("type", "Type", false, "w-[100px]")}
-                {head("amount", "Amount", true, "w-[150px]")}
-                {head("score", "Post-Txn Score", true, "w-[150px]")}
-                {head("change", "Change", true, "w-[150px]")}
+                {head("report", "Report Date")}
+                {head("date", "Transaction Date")}
+                {head("card", "Card Type")}
+                {head("country", "Country")}
+                {head("account", "Account Number")}
+                {head("bin", "BIN")}
+                {head("type", "Transaction Type")}
+                {head("amount", "Transaction Amount", true)}
+                {head("rc", "Response Code", true)}
+                {head("file", "File Source")}
+                {head("score", "Post-Txn Score", true)}
+                {head("reason", "MC Reason Code", true)}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length === 0 && <EmptyRow colSpan={5}>{emptyMessage("data")}</EmptyRow>}
+              {rows.length === 0 && <EmptyRow colSpan={12}>{emptyMessage("data")}</EmptyRow>}
               {rows.map((t, i) => (
                 <TableRow key={`${t.dateTime}-${i}`} className={gridRow(i, "h-9")}>
-                  <TableCell className={gridCell}>{t.dateTime}</TableCell>
+                  <TableCell className={gridCell}>{t.reportDate}</TableCell>
+                  <TableCell className={gridCell}>{t.dateTime.slice(0, 10)}</TableCell>
+                  <TableCell className={gridCell}>{t.card}</TableCell>
+                  <TableCell className={gridCell}>{t.country}</TableCell>
+                  <TableCell className={cn(gridCell, "tabular-nums")}>{t.account}</TableCell>
+                  <TableCell className={cn(gridCell, "tabular-nums")}>{t.bin}</TableCell>
                   <TableCell className={gridCell}>{t.type}</TableCell>
                   <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatCurrency(t.amount)}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{t.responseCode}</TableCell>
+                  <TableCell className={gridCell}>{t.fileSource}</TableCell>
                   <TableCell className={cn(gridCell, "text-right tabular-nums")}>{t.score}</TableCell>
-                  <TableCell className={cn(gridCell, "text-right tabular-nums")}>{formatSigned(t.change)}</TableCell>
+                  <TableCell className={cn(gridCell, "text-right")}>
+                    <ReasonCode code={t.reasonCode} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

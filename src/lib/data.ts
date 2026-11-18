@@ -508,12 +508,56 @@ export function merchantAlertHistoryFor(merchant: Merchant, currentStatus: WorkS
 }
 
 // ---------- Transactions ----------
+/** MC reason codes: A0xx for merchants boarded within a year of the report date, A1xx for older ones. */
+export const MC_REASON_CODES: Record<string, string> = {
+  A001: "New merchant with high chargeback count",
+  A002: "New merchant with spike in chargeback total",
+  A003: "New merchant is in a high-risk MCC",
+  A004: "New merchant with high chargeback volume with cross-border",
+  A005: "New merchant with spike in transactions count with cross-border",
+  A006: "New merchant with high chargeback volume",
+  A007: "New merchant with high ratio of CNP declines",
+  A008: "New merchant with spike of CNP purchase amount",
+  A009: "New merchant with spike of international transaction count",
+  A010: "New merchant with spike of declined transaction count",
+  A011: "New merchant with spike in card-not-present transaction count",
+  A012: "New merchant with high ticket value of international transactions",
+  A013: "New merchant with high ratio of same-card transactions",
+  A014: "New merchant with spike in transactions",
+  A015: "New merchants with moto deviation",
+  A016: "New merchants with refund deviation",
+  A017: "Dormant merchant spike in transaction",
+  A018: "Merchant with high ratio of auth test transaction",
+  A019: "Merchant has high-value recurring transactions from cross-border",
+  A020: "Merchant with high volume ratio from same-card transactions",
+  A021: "New merchant with complex risky transaction patterns",
+  A101: "Yearly onboarded merchants with high chargeback count",
+  A102: "Yearly onboarded merchants with spike in chargeback total",
+  A103: "Yearly onboarded merchants is in a high-risk MCC",
+  A104: "Yearly onboarded merchants with high chargeback volume with cross-border",
+  A105: "Yearly onboarded merchants with spike in transactions count with cross-border",
+  A106: "Yearly onboarded merchants with high chargeback volume",
+  A107: "Yearly onboarded merchants with high ratio of CNP declines",
+  A108: "Yearly onboarded merchants with spike of CNP purchase amount",
+  A109: "Yearly onboarded merchants with spike of international transaction count",
+  A110: "Yearly onboarded merchants with spike of declines transaction count",
+  A111: "Yearly onboarded merchants with spike in card-not-present transaction count",
+  A112: "Yearly onboarded merchants with high ticket value international transactions",
+}
+
 export interface Transaction {
+  reportDate: string
   dateTime: string
+  card: "Visa" | "Mastercard" | "Discover" | "Amex"
+  country: string
+  account: string
+  bin: string
   type: "Sale" | "Refund"
   amount: number
+  responseCode: string
+  fileSource: string
   score: number
-  change: number
+  reasonCode: string
 }
 
 function seeded(seed: number) {
@@ -524,10 +568,33 @@ function seeded(seed: number) {
   }
 }
 
+const CARDS: { card: Transaction["card"]; prefix: string; weight: number }[] = [
+  { card: "Visa", prefix: "4", weight: 0.5 },
+  { card: "Mastercard", prefix: "5", weight: 0.3 },
+  { card: "Discover", prefix: "6011", weight: 0.1 },
+  { card: "Amex", prefix: "37", weight: 0.1 },
+]
+
+function pick<T>(rand: () => number, items: { weight: number; value: T }[]): T {
+  let r = rand()
+  for (const it of items) {
+    if ((r -= it.weight) < 0) return it.value
+  }
+  return items[items.length - 1].value
+}
+
+function digits(rand: () => number, n: number) {
+  return Array.from({ length: n }, () => Math.floor(rand() * 10)).join("")
+}
+
 export function transactionsFor(merchant: Merchant): Transaction[] {
   const rand = seeded(Number(merchant.mid.slice(-6)))
   const rows: Transaction[] = []
   let score = merchant.mcScore
+  const [bm, bd, by] = merchant.boarded.split("/").map(Number)
+  const isNew = new Date(2026, 9, 28).getTime() - new Date(by, bm - 1, bd).getTime() < 365 * 24 * 60 * 60 * 1000
+  const codePool = isNew ? ["A001", "A007", "A011", "A014", "A021"] : ["A101", "A105", "A107", "A111", "A112"]
+  const fileSource = `${merchant.processor.toUpperCase()}_TXN_20261028_01.dat`
   // Start at 05:48 PM on the report date and walk backwards ~7 minutes per transaction.
   const start = new Date(2026, 9, 28, 17, 48, 0)
   for (let i = 0; i < merchant.txnCount; i++) {
@@ -535,7 +602,33 @@ export function transactionsFor(merchant: Merchant): Transaction[] {
     const isRefund = rand() < 0.08
     const amount = Math.round((10 + rand() * merchant.avgNetTicket * 2) * 100) / 100
     const change = isRefund ? 0 : rand() < 0.3 ? 1 : 0
-    rows.push({ dateTime: formatDateTime(t), type: isRefund ? "Refund" : "Sale", amount: isRefund ? -amount : amount, score, change })
+    const { card, prefix } = pick(rand, CARDS.map((c) => ({ weight: c.weight, value: c })))
+    const bin = prefix + digits(rand, (rand() < 0.25 ? 8 : 6) - prefix.length)
+    const country = pick(rand, [
+      { weight: 0.85, value: "USA" },
+      { weight: 0.07, value: "Canada" },
+      { weight: 0.05, value: "Mexico" },
+      { weight: 0.03, value: "United Kingdom" },
+    ])
+    const responseCode = isRefund ? "00" : pick(rand, [
+      { weight: 0.9, value: "00" },
+      { weight: 0.06, value: "05" },
+      { weight: 0.04, value: "51" },
+    ])
+    rows.push({
+      reportDate: REPORT_DATE,
+      dateTime: formatDateTime(t),
+      card,
+      country,
+      account: `${bin.slice(0, 6)}******${digits(rand, 4)}`,
+      bin,
+      type: isRefund ? "Refund" : "Sale",
+      amount: isRefund ? -amount : amount,
+      responseCode,
+      fileSource,
+      score,
+      reasonCode: codePool[Math.floor(rand() * codePool.length)],
+    })
     score = Math.max(0, score - change)
   }
   return rows
