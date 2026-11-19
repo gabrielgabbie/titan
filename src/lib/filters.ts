@@ -27,11 +27,11 @@ export const OPERATORS: Record<FieldType, { value: string; label: string }[]> = 
   ],
   number: [
     { value: "eq", label: "=" },
-    { value: "neq", label: "≠" },
+    { value: "neq", label: "!=" },
     { value: "gt", label: ">" },
-    { value: "gte", label: "≥" },
+    { value: "gte", label: ">=" },
     { value: "lt", label: "<" },
-    { value: "lte", label: "≤" },
+    { value: "lte", label: "<=" },
   ],
   enum: [
     { value: "is", label: "is" },
