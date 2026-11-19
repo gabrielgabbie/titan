@@ -20,7 +20,8 @@ function FilterRow<T>({
   rule: FilterRule
   fields: FilterField<T>[]
   onChange: (r: FilterRule) => void
-  onRemove: () => void
+  /** Omitted when this is the only row: the builder always keeps one. */
+  onRemove?: () => void
   showLabels: boolean
 }) {
   const field = fields.find((f) => f.id === rule.field)
@@ -30,10 +31,6 @@ function FilterRow<T>({
 
   return (
     <div className="flex items-end gap-2" data-filter-row>
-      <Button variant="ghost" size="icon" className="mb-0 shrink-0" aria-label="Remove filter" onClick={onRemove}>
-        <X />
-      </Button>
-
       <div className="min-w-0 flex-1">
         {label("Column")}
         <Select
@@ -100,6 +97,12 @@ function FilterRow<T>({
           />
         )}
       </div>
+
+      {onRemove && (
+        <Button variant="ghost" size="icon" className="shrink-0" aria-label="Remove filter" onClick={onRemove}>
+          <X />
+        </Button>
+      )}
     </div>
   )
 }
@@ -117,10 +120,12 @@ export function FilterBuilder<T>({
   const [open, setOpen] = React.useState(false)
   const active = rules.filter(isComplete).length
 
-  // Opening with no rules starts with one empty row, like the concept.
+  // There is always one row; a fresh row starts on the grid's first column and that column's first operator.
+  const freshRule = () => (fields[0] ? newRule(fields[0].id, fields[0].type) : newRule())
+
   const handleOpen = (o: boolean) => {
     setOpen(o)
-    if (o && rules.length === 0) onChange([newRule()])
+    if (o && rules.length === 0) onChange([freshRule()])
     // Drop rows that were left blank when closing.
     if (!o) onChange(rules.filter((r) => r.field || r.value))
   }
@@ -140,34 +145,26 @@ export function FilterBuilder<T>({
       <PopoverContent align="end" className="w-[min(720px,calc(100vw-2rem))] p-0">
         <div className="flex flex-col gap-3 p-4">
           <div className="text-base font-medium">Filters</div>
-          {rules.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No filters applied.</p>
-          ) : (
-            rules.map((r, i) => (
-              <FilterRow
-                key={r.id}
-                rule={r}
-                fields={fields}
-                showLabels={i === 0}
-                onChange={update}
-                onRemove={() => remove(r.id)}
-              />
-            ))
-          )}
+          {rules.map((r, i) => (
+            <FilterRow
+              key={r.id}
+              rule={r}
+              fields={fields}
+              showLabels={i === 0}
+              onChange={update}
+              onRemove={rules.length > 1 ? () => remove(r.id) : undefined}
+            />
+          ))}
         </div>
         <div className="flex items-center justify-between inset-shadow-edge-t px-2 py-2">
-          <Button variant="ghost" size="sm" className="text-link hover:text-link" onClick={() => onChange([...rules, newRule()])}>
+          <Button variant="ghost" size="sm" className="text-link hover:text-link" onClick={() => onChange([...rules, freshRule()])}>
             <Plus /> Add Filter
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-link hover:text-link"
-            disabled={rules.length === 0}
-            onClick={() => onChange([])}
-          >
-            <X /> Remove All
-          </Button>
+          {rules.length > 1 && (
+            <Button variant="destructive" size="sm" onClick={() => onChange([freshRule()])}>
+              <X /> Remove All
+            </Button>
+          )}
         </div>
       </PopoverContent>
     </Popover>
