@@ -300,10 +300,13 @@ export function AlertGrid({
   scope,
   paginate = false,
   initialTab = "all",
+  toolbar,
 }: {
   rows: Row[]
   scope: ViewScope
   paginate?: boolean
+  /** Controls shown at the start of the Filter and Search row (Merchant View puts Report Date and View there). */
+  toolbar?: React.ReactNode
   /** The status tab the grid opens on, such as the one a Queue View count links to. */
   initialTab?: StatusTab
 }) {
@@ -311,6 +314,8 @@ export function AlertGrid({
   const state = viewState[scope]
   const view = state.views.find((v) => v.id === state.activeId) ?? state.views[0]
 
+  // Work status is per queue, so only queue grids show it: the status tabs, the pinned Disposition column and its taller rows.
+  const queueLevel = scope === "queue"
   const [tab, setTab] = React.useState<StatusTab>(initialTab)
   const [query, setQuery] = React.useState("")
   const [rules, setRules] = React.useState<FilterRule[]>([])
@@ -369,23 +374,26 @@ export function AlertGrid({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as StatusTab)}>
-          <TabsList>
-            {(
-              [
-                ["all", "All"],
-                ["unworked", "Unworked"],
-                ["wip", "WIP"],
-                ["worked", "Worked"],
-              ] as const
-            ).map(([value, label]) => (
-              <TabsTrigger key={value} value={value} className="gap-1.5 px-2">
-                {label}
-                <CountBadge count={counts[value]} active={tab === value} />
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {toolbar}
+        {queueLevel && (
+          <Tabs value={tab} onValueChange={(v) => setTab(v as StatusTab)}>
+            <TabsList>
+              {(
+                [
+                  ["all", "All"],
+                  ["unworked", "Unworked"],
+                  ["wip", "WIP"],
+                  ["worked", "Worked"],
+                ] as const
+              ).map(([value, label]) => (
+                <TabsTrigger key={value} value={value} className="gap-1.5 px-2">
+                  {label}
+                  <CountBadge count={counts[value]} active={tab === value} />
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
         <div className="flex items-center gap-2">
           <FilterBuilder fields={fields} rules={rules} onChange={setRules} />
           <InputGroup className="h-8 w-[300px]">
@@ -412,7 +420,7 @@ export function AlertGrid({
                   className={cn(
                     gridHead,
                     col.align === "right" && "text-right",
-                    i === 0 && "bg-muted sticky left-0 z-20 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
+                    queueLevel && i === 0 && "bg-muted sticky left-0 z-20 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
                   )}
                 >
                   <SortHeader
@@ -429,7 +437,7 @@ export function AlertGrid({
             {visible.map((row, ri) => (
               <TableRow
                 key={row.alert.id}
-                className={cn("h-14 hover:bg-zinc-100", ri % 2 === 1 ? "bg-zinc-50" : "bg-card")}
+                className={cn(queueLevel ? "h-14" : "h-10", "hover:bg-zinc-100", ri % 2 === 1 ? "bg-zinc-50" : "bg-card")}
               >
                 {columns.map((col, i) => (
                   <TableCell
@@ -438,7 +446,7 @@ export function AlertGrid({
                       gridCell,
                       "py-2",
                       col.align === "right" && "text-right tabular-nums",
-                      i === 0 && "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
+                      queueLevel && i === 0 && "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
                     )}
                   >
                     <Cell row={row} col={col} />

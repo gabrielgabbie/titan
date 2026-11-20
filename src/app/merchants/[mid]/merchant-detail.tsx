@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { CircleHelp, ExternalLink, Store } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -11,7 +12,7 @@ import { GridPagination, PAGE_SIZE } from "@/components/titan/alert-grid"
 import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { SortHeader } from "@/components/titan/badges"
 import { DispositionControl } from "@/components/titan/disposition-control"
-import { linkClass } from "@/components/titan/links"
+import { linkClass, reportHref } from "@/components/titan/links"
 import { useTitan } from "@/lib/store"
 import { McScoreCard } from "@/components/titan/mc-score-card"
 import { PageShell } from "@/components/titan/page-shell"
@@ -49,17 +50,22 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
+                {/* Disposition leads and stays pinned, as in the queue grids. */}
+                <TableHead className={cn(gridHead, "bg-muted sticky left-0 z-20 w-[160px] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border")}>Disposition</TableHead>
                 <TableHead className={cn(gridHead, "w-[120px]")}>Report Date</TableHead>
                 <TableHead className={cn(gridHead, "w-[200px]")}>Last Alerted</TableHead>
                 <TableHead className={gridHead}>Detection Queue</TableHead>
-                <TableHead className={cn(gridHead, "w-[250px]")}>Violated Parameters</TableHead>
-                <TableHead className={cn(gridHead, "w-[250px]")}>Disposition</TableHead>
+                <TableHead className={cn(gridHead, "w-[160px]")}>Violated Parameters</TableHead>
+                <TableHead className={cn(gridHead, "w-[190px]")}>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {alerts.length === 0 && <EmptyRow colSpan={5}>{emptyMessage("data")}</EmptyRow>}
+              {alerts.length === 0 && <EmptyRow colSpan={6}>{emptyMessage("data")}</EmptyRow>}
               {alerts.map((a, i) => (
-                <TableRow key={a.id} className={gridRow(i, "h-10")}>
+                <TableRow key={a.id} className={cn("bg-card", gridRow(i, "h-10"))}>
+                  <TableCell className={cn(gridCell, "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border")}>
+                    <DispositionControl merchant={merchant} alertId={a.id} />
+                  </TableCell>
                   <TableCell className={gridCell}>{REPORT_DATE}</TableCell>
                   <TableCell className={gridCell}>{`${REPORT_DATE} ${a.time}`}</TableCell>
                   <TableCell className={gridCell}>
@@ -67,7 +73,9 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
                   </TableCell>
                   <TableCell className={gridCell}>{a.violated.join(", ")}</TableCell>
                   <TableCell className={gridCell}>
-                    <DispositionControl merchant={merchant} alertId={a.id} />
+                    <Link href={reportHref(a.queueId)} className={cn(linkClass, "whitespace-nowrap")}>
+                      View Alerted Merchants
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}

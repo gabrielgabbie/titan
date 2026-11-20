@@ -160,7 +160,8 @@ export function FilterBuilder<T>({
           <Button variant="ghost" size="sm" className="text-link hover:text-link" onClick={() => onChange([...rules, freshRule()])}>
             <Plus /> Add Filter
           </Button>
-          {rules.length > 1 && (
+          {/* Shown whenever there is something to remove: a second row, or a value in the only row. */}
+          {(rules.length > 1 || rules.some((r) => r.value)) && (
             <Button variant="destructive" size="sm" onClick={() => onChange([freshRule()])}>
               <X /> Remove All
             </Button>
