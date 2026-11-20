@@ -50,8 +50,7 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
           <Table>
             <TableHeader className="bg-muted">
               <TableRow className="hover:bg-muted">
-                {/* Disposition leads and stays pinned, as in the queue grids. */}
-                <TableHead className={cn(gridHead, "bg-muted sticky left-0 z-20 w-[160px] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border")}>Disposition</TableHead>
+                <TableHead className={cn(gridHead, "w-[160px]")}>Disposition</TableHead>
                 <TableHead className={cn(gridHead, "w-[120px]")}>Report Date</TableHead>
                 <TableHead className={cn(gridHead, "w-[200px]")}>Last Alerted</TableHead>
                 <TableHead className={gridHead}>Detection Queue</TableHead>
@@ -62,8 +61,8 @@ function AlertStatusCard({ merchant }: { merchant: Merchant }) {
             <TableBody>
               {alerts.length === 0 && <EmptyRow colSpan={6}>{emptyMessage("data")}</EmptyRow>}
               {alerts.map((a, i) => (
-                <TableRow key={a.id} className={cn("bg-card", gridRow(i, "h-10"))}>
-                  <TableCell className={cn(gridCell, "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border")}>
+                <TableRow key={a.id} className={gridRow(i, "h-10")}>
+                  <TableCell className={gridCell}>
                     <DispositionControl merchant={merchant} alertId={a.id} />
                   </TableCell>
                   <TableCell className={gridCell}>{REPORT_DATE}</TableCell>
