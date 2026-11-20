@@ -42,7 +42,7 @@ export interface ColumnDef {
 }
 
 export const COLUMNS: ColumnDef[] = [
-  { id: "disposition", label: "Disposition", locked: true, width: 150 },
+  { id: "disposition", label: "Disposition", locked: true, width: 150, scopes: ["queue"] },
   { id: "mid", label: "MID", locked: true, width: 160 },
   { id: "merchantName", label: "Merchant Name", locked: true, width: 300 },
   { id: "queueName", label: "Detection Queue", locked: true, width: 280, scopes: ["merchant"] },

@@ -10,8 +10,7 @@ export default function MerchantViewPage() {
   return (
     <PageShell crumbs={[{ label: "Merchant View" }]}>
       <h1 className="text-lg font-semibold">Merchant View</h1>
-      <ViewToolbar scope="merchant" />
-      <AlertGrid rows={rows} scope="merchant" paginate />
+      <AlertGrid rows={rows} scope="merchant" paginate toolbar={<ViewToolbar scope="merchant" />} />
     </PageShell>
   )
 }
