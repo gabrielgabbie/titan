@@ -1,0 +1,590 @@
+/*
+  Aperia app language: every override an Aperia app makes on aperia-ds5 that is not its brand.
+  Import after Tailwind and aperia-ds5, then set the brand slots (references/brand-slots.md) in your app's own CSS:
+
+    @import "tailwindcss";
+    @import "aperia-ds5/base.css";
+    @import "./aperia-language.css";
+    @import "./brand.css";
+
+  Extracted from the Sales Portal's app/globals.css on 2026-11-09. Rules here are candidates to move into aperia-ds5;
+  once one is there, delete it here.
+*/
+/* Unlayered rules beat the design system's classes; @layer utilities sits beside them. */
+
+/* Whatever a click acts on shows the pointer: Tailwind 4 no longer gives it to buttons, and a row or card
+   that opens on a click anywhere carries data-opens from opensOnClick. In base, so a class on one, such as a drag
+   handle's grab, still wins. A button disabled with a reason keeps the arrow while its tooltip says why. */
+@layer base {
+  :is(
+    button,
+    [role="button"],
+    [role="tab"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="switch"],
+    summary,
+    select,
+    input:is([type="checkbox"], [type="radio"], [type="file"]),
+    [data-opens]
+  ):not(:disabled, [aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+}
+
+/* The design system's menu, select and picker items set cursor-default by class; unlayered, this beats it. A disabled
+   item takes no pointer events, so it never shows. */
+[role="menuitem"],
+[role="menuitemcheckbox"],
+[role="menuitemradio"],
+[role="option"] {
+  cursor: pointer;
+}
+
+/* Colors */
+
+:root {
+  /* The design system's greys and red pass on white only; these clear 4.5:1 on the page, a muted fill and a red-tinted
+     highlighted menu item. */
+  --muted-foreground: #66666e;
+  --destructive: #c10007;
+
+  --background: oklch(0.975 0.002 286);
+  --muted: oklch(0.945 0.001 286.375);
+  --sheet: var(--background);
+  --control: var(--card);
+  --control-hover: var(--muted);
+  /* A chip in a field: one step from the control, darker on a white field and lighter on a dark one. */
+  --chip: var(--muted);
+  /* Native parts, such as a date field's calendar icon, follow the theme. */
+  color-scheme: light;
+}
+
+.dark {
+  --muted-foreground: #a8a8b2;
+  --destructive: #ff8a8c;
+  --background: oklch(0.244 0.006 286);
+  --muted: oklch(0.274 0.006 286.618);
+  --sheet: oklch(0.26 0.006 286);
+  --card: oklch(0.281 0.006 286);
+  --control: oklch(0.31 0.006 286);
+  --popover: oklch(0.33 0.006 286);
+  --accent: oklch(0.36 0.006 286);
+  --control-hover: var(--accent);
+  --chip: var(--accent);
+  color-scheme: dark;
+}
+
+/* Status colors */
+
+@theme {
+  --color-status-gray: #eceef2;
+  --color-status-gray-foreground: #454a54;
+  --color-status-blue: #dceefb;
+  --color-status-blue-foreground: #0b5a91;
+  --color-status-green: #dcf3e4;
+  --color-status-green-foreground: #14663a;
+  --color-status-amber: #fbeed3;
+  --color-status-amber-foreground: #7a4c07;
+  --color-status-red: #fbe3e3;
+  --color-status-red-foreground: #8f1f1f;
+  --color-status-purple: #ede5fb;
+  --color-status-purple-foreground: #5b2a9e;
+  --color-status-teal: #d7f2f0;
+  --color-status-teal-foreground: #0e5f5a;
+  --color-status-orange: #fde6d6;
+  --color-status-orange-foreground: #8a3a0b;
+  --color-status-pink: #fbe3f0;
+  --color-status-pink-foreground: #8c1f5c;
+}
+
+.dark {
+  --color-status-gray: #3b3c41;
+  --color-status-gray-foreground: #c9cdd6;
+  --color-status-blue: #123349;
+  --color-status-blue-foreground: #96cdf1;
+  --color-status-green: #12331f;
+  --color-status-green-foreground: #86dca8;
+  --color-status-amber: #3a2c0c;
+  --color-status-amber-foreground: #e8c470;
+  --color-status-red: #3b1717;
+  --color-status-red-foreground: #f3a6a6;
+  --color-status-purple: #2a1a45;
+  --color-status-purple-foreground: #cbb2f5;
+  --color-status-teal: #0f3331;
+  --color-status-teal-foreground: #85d8d0;
+  --color-status-orange: #3d2010;
+  --color-status-orange-foreground: #f2b28a;
+  --color-status-pink: #3b1528;
+  --color-status-pink-foreground: #f2a8cf;
+}
+
+/* Access levels in the Roles grid: Linear's backlog, in-progress and done colors, bright enough for a 14px glyph in both themes. */
+
+@theme {
+  --color-level-none: #bec2c8;
+  --color-level-owned: lch(80% 90 85);
+  --color-level-all: #4cb782;
+}
+
+/* Surface and control: a 0.5px edge and two soft shadows. In dark mode the edge blends into the fill. */
+
+:root {
+  --shadow-color: var(--foreground);
+  --edge-strength: 10%; /* a control raises it to 16% */
+  --edge-blend: 0%;
+  --shadow-soft: 2%;
+  --shadow-tight: 5%;
+}
+.dark {
+  --shadow-color: oklch(0 0 0);
+  --edge-blend: 100%;
+  --shadow-soft: 20%;
+  --shadow-tight: 30%;
+}
+
+/* Inline, so the variables resolve on each element. */
+@theme inline {
+  --shadow-surface:
+    0 0 0 0.5px
+      color-mix(
+        in oklab,
+        var(--foreground) var(--edge-strength),
+        color-mix(
+          in oklab,
+          var(--surface-fill, transparent) var(--edge-blend),
+          transparent
+        )
+      ),
+    0 3px 6px -2px
+      color-mix(in oklab, var(--shadow-color) var(--shadow-soft), transparent),
+    0 1px 1px
+      color-mix(in oklab, var(--shadow-color) var(--shadow-tight), transparent);
+}
+
+@utility surface {
+  @apply rounded-xl bg-card ring-0 shadow-surface;
+  --surface-fill: var(--card);
+}
+@utility control {
+  @apply border-transparent shadow-surface;
+  --surface-fill: var(--control);
+  --edge-strength: 16%;
+}
+
+@layer utilities {
+  [data-slot="card"] {
+    @apply surface;
+  }
+  :is(
+    [data-slot="input"],
+    [data-slot="textarea"],
+    [data-slot="select-trigger"],
+    [data-slot="input-group"],
+    [data-slot="combobox-chips"],
+    [data-slot="checkbox"],
+    [data-slot="radio-group-item"],
+    [data-slot="attachment"],
+    [data-readonly],
+    :is(button, a)[data-variant="outline"]
+  ) {
+    @apply control;
+  }
+  :is(button, a)[data-variant="outline"] {
+    @apply bg-clip-border dark:not-focus-visible:border-transparent dark:focus-visible:border-ring;
+  }
+  /* The design system clips the chips field's fill inside its transparent border, which showed as a band of the page
+     between the fill and the control's edge, a heavier outline than every other field's. */
+  [data-slot="combobox-chips"] {
+    @apply bg-clip-border;
+  }
+}
+
+/* Unlayered, to beat the design system's ring: an avatar's edge is a 10% dark line drawn inside it, over the image or
+   initials, crisp on any fill where the blended border washed out on a pale one. */
+[data-slot="avatar"]::after {
+  border-width: 0;
+  mix-blend-mode: normal;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--shadow-color) 10%, transparent);
+}
+
+/* Unlayered, to beat the design system's backgrounds; ticked, pressed and disabled controls keep theirs. */
+:is(
+  .control,
+  [data-slot="input"],
+  [data-slot="textarea"],
+  [data-slot="select-trigger"],
+  [data-slot="input-group"],
+  [data-slot="combobox-chips"],
+  [data-slot="attachment"],
+  [data-slot="checkbox"]:not([data-state="checked"]),
+  [data-slot="radio-group-item"]:not([data-checked], [aria-checked="true"]),
+  :is(button, a)[data-variant="outline"]:not([aria-pressed="true"])
+):not(:disabled, [data-readonly]) {
+  background-color: var(--control);
+}
+:is(button, a)[data-variant="outline"]:not(:disabled, [aria-pressed="true"]):is(
+    :hover,
+    [aria-expanded="true"]
+  ) {
+  background-color: var(--control-hover);
+}
+[data-slot="combobox-chip"] {
+  background-color: var(--chip);
+}
+
+/* A Select's value hides what spills past it, to cut long text, and a logo leading it sat flush on its edge, so the
+   logo's edge line was cut on the left. A pixel of room, taken back outside, leaves the logo where it was. */
+[data-slot="select-value"]:has(> .shadow-surface:first-child) {
+  padding-left: 1px;
+  margin-left: -1px;
+}
+
+/* A ghost button's hover and open menu shade whatever is behind it, a step darker in light mode and lighter in dark: the
+   design system's fixed muted gray vanished on tinted boxes and columns, and on dark cards went darker. One disabled
+   with a reason stays clear (IconButton).  an attachment's Remove is a ghost button whose own
+   data-slot replaces the button's, so it is named too. */
+:root {
+  --ghost-hover: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+.dark {
+  --ghost-hover: color-mix(in oklab, var(--foreground) 10%, transparent);
+}
+:is(
+    [data-slot="button"],
+    [data-slot="attachment-action"]
+  )[data-variant="ghost"][aria-expanded="true"] {
+  background-color: var(--ghost-hover);
+}
+@media (hover: hover) {
+  :is(
+      [data-slot="button"],
+      [data-slot="attachment-action"]
+    )[data-variant="ghost"]:not([aria-disabled="true"]):hover {
+    background-color: var(--ghost-hover);
+  }
+}
+
+/* Unlayered, to beat the design system's tints: a red fill behind red text dropped a highlighted Delete to 3.2:1 in
+   dark mode and a hovered one to 4:1 in light. In dark a destructive item or button sits on the neutral fill every
+   other one does, and in light a hovered button deepens its tint less. */
+button[data-variant="destructive"]:hover {
+  background-color: color-mix(in oklab, var(--destructive) 14%, transparent);
+}
+.dark {
+  [data-slot="dropdown-menu-item"][data-variant="destructive"]:focus,
+  button[data-variant="destructive"] {
+    background-color: var(--accent);
+  }
+  button[data-variant="destructive"]:hover {
+    background-color: color-mix(in oklab, var(--accent) 50%, var(--popover));
+  }
+}
+
+/* Unlayered, to beat the design system's heights: on a phone, fields and buttons are 40px tall, a thumb's target, where
+   the desktop's 32px suits a pointer. A select that reads as text (.plain) keeps its size inside a row. */
+@media (width < 40rem) {
+  :is(
+    [data-slot="input"],
+    [data-slot="input-group"],
+    [data-slot="select-trigger"][data-size="default"]:not(.plain),
+    [data-slot="button"][data-size="default"]
+  ) {
+    height: 2.5rem;
+  }
+}
+
+/* Unlayered, to beat the design system's outline-hidden: a chart takes focus to step through its values with the arrow
+   keys, so it shows the ring every other control does. */
+[data-slot="chart"] .recharts-surface:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* A chart's tooltip is a card, white like the cards it opens over rather than the page's grey, and keeps a gap
+   between each series' name and its value, which the design system sets flush. */
+[data-slot="chart"] .recharts-tooltip-wrapper > div {
+  background-color: var(--card);
+}
+[data-slot="chart"] .recharts-tooltip-wrapper .justify-between {
+  gap: 1rem;
+}
+
+/* Every disabled field looks the same, whatever its kind: a picker or an amount, whose control sits in a wrapper, as a
+   plain input or select does. The design system fades some kinds and leaves others, a chips field among them, looking
+   enabled. In light mode a disabled field is recessed, which reads as unavailable without washing out; in dark mode it
+   fades on its usual fill, which keeps its edge in view where a darker fill disappears into the page. */
+:is(
+  :is(
+    [data-slot="input"],
+    [data-slot="textarea"],
+    [data-slot="select-trigger"]
+  ):disabled,
+  [data-slot="input-group"]:has([data-slot="input-group-control"]:disabled),
+  [data-slot="combobox-chips"]:has([data-slot="combobox-chip-input"]:disabled)
+) {
+  /* The field fades or recedes as a whole, so nothing inside it fades again. */
+  &
+    :is(
+      [data-slot="input-group-control"],
+      [data-slot="input-group-addon"],
+      [data-slot="input-group-button"],
+      [data-slot="combobox-trigger"],
+      [data-slot="combobox-chip"]
+    ) {
+    opacity: 1;
+  }
+  /* A pick in a disabled field cannot be removed. */
+  & [data-slot="combobox-chip-remove"] {
+    display: none;
+  }
+  /* The not-allowed cursor over the whole field, its parts included. The design system set it on some kinds and turned
+     pointer events off on others, which showed the plain arrow instead. */
+  pointer-events: auto;
+  cursor: not-allowed;
+  & * {
+    cursor: not-allowed;
+  }
+
+  :root:not(.dark) & {
+    opacity: 1;
+    border-color: transparent;
+    background-color: color-mix(in oklab, var(--foreground) 4%, transparent);
+    color: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
+
+    &::placeholder,
+    & ::placeholder,
+    & :is([data-slot="input-group-addon"], [data-slot="combobox-chip"]) {
+      color: inherit;
+    }
+    & svg {
+      opacity: 0.5;
+    }
+  }
+  .dark & {
+    opacity: 0.5;
+    background-color: var(--control);
+  }
+}
+
+/* A value shown read-only (data-readonly) is a fact, not a control the viewer is kept from: the control's shape and
+   edge, so it lines up with the pickers beside it, on no fill and in plain text. Recessed and greyed, it read as
+   disabled. */
+[data-readonly] {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+/* Sheets */
+
+[data-slot="sheet-content"] {
+  background-color: var(--sheet);
+
+  &[data-side="right"] {
+    inset-block: 1rem;
+    right: 1rem;
+    height: auto;
+    border-left: 0;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-surface), var(--shadow-lg);
+    --surface-fill: var(--sheet);
+
+    @media (width < 40rem) {
+      inset: 0;
+      width: 100%;
+      border-radius: 0;
+    }
+  }
+  /* Steps back while another sheet is open over it. */
+  &[data-side="right"][data-state="open"]:has(
+      ~ [data-slot="sheet-content"][data-state="open"]
+    ) {
+    translate: -1rem 0;
+    scale: 0.98;
+  }
+}
+/* Dialogs take the sheet's look. */
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
+  background-color: var(--sheet);
+  box-shadow: var(--shadow-surface), var(--shadow-lg);
+  --surface-fill: var(--sheet);
+}
+[data-slot="dialog-content"] [data-slot="command"] {
+  background-color: transparent;
+}
+/* One overlay for every floating panel. */
+:root {
+  --overlay: oklch(0 0 0 / 10%);
+}
+.dark {
+  --overlay: oklch(0 0 0 / 50%);
+}
+:is(
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"],
+  [data-slot="sheet-overlay"],
+  [data-slot="drawer-overlay"]
+) {
+  background-color: var(--overlay);
+  backdrop-filter: none;
+}
+/* Shared panel motion; tw-animate reads these variables. */
+:root {
+  --panel-in: 220ms;
+  --panel-out: 150ms;
+}
+:is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) {
+  --tw-enter-scale: 0.97;
+  --tw-exit-scale: 0.97;
+}
+:is(
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="sheet-content"],
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"],
+  [data-slot="sheet-overlay"],
+  [data-slot="drawer-overlay"]
+) {
+  &[data-state="open"] {
+    --tw-animation-duration: var(--panel-in);
+    --tw-ease: var(--rail-ease);
+  }
+  &[data-state="closed"] {
+    --tw-animation-duration: var(--panel-out);
+    --tw-ease: cubic-bezier(0.4, 0, 1, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    --tw-enter-scale: 1;
+    --tw-exit-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-exit-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-translate-y: 0;
+  }
+}
+/* A title-only header matches the top bar's 56px. */
+[data-slot="sheet-header"] {
+  min-height: 3.5rem;
+  padding-block: 0.96875rem;
+}
+[data-slot="sheet-close"] {
+  top: 0.875rem;
+}
+[data-slot="sheet-title"] {
+  overflow: hidden;
+  padding-right: 2.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sidebar */
+
+/* The rail eases out instead of the design system's linear 200ms, which stopped dead, and its buttons and the pane
+   beside it move on the same clock, so nothing arrives ahead of the edge. */
+:root {
+  --rail-duration: 250ms;
+  --rail-ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+:is(
+  [data-slot="sidebar-gap"],
+  [data-slot="sidebar-container"],
+  [data-sidebar="menu-button"]
+) {
+  transition-duration: var(--rail-duration);
+  transition-timing-function: var(--rail-ease);
+}
+[data-slot="sidebar-inset"] {
+  transition: margin var(--rail-duration) var(--rail-ease);
+}
+/* The rail's edge cuts a label as it narrows; an ellipsis flickered on every frame. */
+[data-sidebar="menu-button"] > span:last-child {
+  text-overflow: clip;
+}
+
+/* Small tweaks */
+
+/* The body pads itself, so it scrolls up to the header's border instead of stopping short of it. */
+[data-slot="sheet-content"] {
+  gap: 0;
+}
+/* Card white, not the design system's off-white. */
+:root:not(.dark) [data-slot="switch-thumb"] {
+  background-color: var(--card);
+}
+/* The thumb is the switch's control, so it takes the inputs' edge and shadow. */
+[data-slot="switch-thumb"] {
+  @apply control;
+}
+/* The picked tab is something you click, so it takes the inputs' edge and shadow. */
+[data-slot="tabs-list"][data-variant="default"]
+  [data-slot="tabs-trigger"][data-state="active"] {
+  @apply control bg-(--control);
+}
+/* A switch between two views of one list (Board or Table, Mine or All) is a toggle group, since it has no panels of its
+   own for tabs to point at, drawn as the tab strip is. */
+[data-slot="toggle-group"] {
+  @apply h-8 gap-0 bg-muted p-[3px];
+}
+[data-slot="toggle-group-item"] {
+  @apply h-[calc(100%-1px)] min-w-0 rounded-md border border-transparent px-1.5 text-foreground/60 hover:bg-transparent hover:text-foreground dark:text-muted-foreground;
+
+  &[data-state="on"] {
+    @apply control bg-(--control) text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Semibold like every other heading; the design system uses medium. */
+  [data-slot="card-title"] {
+    @apply font-semibold;
+  }
+  /* A select that reads as text until hovered. */
+  .plain {
+    @apply h-7 w-auto min-w-0 gap-2 border-0! bg-transparent! px-1.5 shadow-none! ring-0! hover:bg-muted/50! data-[state=open]:bg-muted/50! [&_svg]:size-3.5;
+  }
+  /* A table row's hover is already muted/50, so inside one the select steps past it. A foreground tint, since dark mode's --muted is darker than --card. */
+  tr .plain:is(:hover, [data-state="open"]) {
+    @apply bg-foreground/6!;
+  }
+}
+
+/* An empty date shows its format (mm/dd/yyyy) in the muted color every placeholder uses. React keeps a controlled
+   input's value attribute in step, so the rule lets go once a date is picked. */
+@layer base {
+  input:is(
+      [type="date"],
+      [type="time"],
+      [type="datetime-local"],
+      [type="month"]
+    )[value=""] {
+    color: var(--color-muted-foreground);
+  }
+}
+
+/* A number field has no spin arrows: counts are typed, and the arrows nudged a value by one on a stray scroll. */
+@layer base {
+  input[type="number"] {
+    appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}
+
+/* Command rows highlight like menu, select and picker items. */
+[data-slot="command-item"] {
+  border-radius: var(--radius-md) !important;
+  &[data-selected="true"] {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+  }
+}

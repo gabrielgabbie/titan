@@ -125,7 +125,7 @@ export function ViewSheet({
                 type="button"
                 variant="link"
                 size="xs"
-                className="text-link h-auto px-0 font-normal"
+                className="text-link h-auto px-0"
                 onClick={() => setColumns(defaultColumnSettings(scope))}
               >
                 Reset to Default
@@ -185,8 +185,8 @@ export function ViewSheet({
           <SheetFooter className="flex-row items-center justify-between p-4">
             <Button
               type="button"
-              variant="link"
-              className="text-destructive px-2.5"
+              variant="ghost"
+              className="text-destructive hover:text-destructive"
               disabled={state.views.length <= 1}
               onClick={() => {
                 if (active) deleteView(scope, active.id)
@@ -206,13 +206,15 @@ export function ViewSheet({
             </div>
           </SheetFooter>
         ) : (
-          <SheetFooter className="p-4">
-            <Button type="submit" form="view-form">
-              Create View
-            </Button>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
+          <SheetFooter className="flex-row items-center justify-end p-4">
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" form="view-form">
+                Create View
+              </Button>
+            </div>
           </SheetFooter>
         )}
       </SheetContent>

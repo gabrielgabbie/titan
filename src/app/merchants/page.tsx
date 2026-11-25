@@ -9,9 +9,8 @@ export default function MerchantViewPage() {
   const rows = useRows()
   return (
     <PageShell crumbs={[{ label: "Merchant View" }]}>
-      <h1 className="text-lg font-semibold">Alerted Merchants</h1>
-      <ViewToolbar scope="merchant" />
-      <AlertGrid rows={rows} scope="merchant" paginate />
+      <h1 className="text-lg font-semibold">Merchant View</h1>
+      <AlertGrid rows={rows} scope="merchant" paginate toolbar={<ViewToolbar scope="merchant" />} />
     </PageShell>
   )
 }

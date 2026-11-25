@@ -7,7 +7,6 @@ import { ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -16,7 +15,9 @@ import { DISPOSITIONS, type Merchant } from "@/lib/data"
 import { useTitan } from "@/lib/store"
 import { STATUS_BG, STATUS_LABEL, StatusIcon } from "./badges"
 
-/** Status split-button (opens the Mark Work and Disposition popover) + DQ Details link + status note. */
+const POPOVER_WIDTH = 360
+
+/** Status split-button (opens the Mark Work and Disposition popover) + status note. */
 export function DispositionControl({
   merchant,
   alertId,
@@ -27,30 +28,35 @@ export function DispositionControl({
   /** Optional line under the control, e.g. "Locked by Marcus Lee". */
   note?: string
 }) {
-  const { statuses, submitDisposition, openDqDetails } = useTitan()
-  const { status } = statuses[merchant.mid]
+  const { statuses, submitDisposition } = useTitan()
+  const { status } = statuses[alertId]
   const [open, setOpen] = React.useState(false)
+  // Align the popover's left edge with the button; when it would not fit on screen, align right edges instead.
+  const anchorRef = React.useRef<HTMLDivElement>(null)
+  const [align, setAlign] = React.useState<"start" | "end">("start")
+  const onOpenChange = (next: boolean) => {
+    const rect = anchorRef.current?.getBoundingClientRect()
+    if (next && rect) setAlign(rect.left + POPOVER_WIDTH + 8 > document.documentElement.clientWidth ? "end" : "start")
+    setOpen(next)
+  }
   const [wip, setWip] = React.useState(status === "wip")
   const [disposition, setDisposition] = React.useState<string>("")
-  const [other, setOther] = React.useState("")
 
   React.useEffect(() => {
     if (open) {
       setWip(status === "wip")
       setDisposition("")
-      setOther("")
     }
   }, [open, status])
 
-  const isOther = disposition.startsWith("Other")
-  const canSubmit = (disposition && (!isOther || other.trim())) || wip !== (status === "wip")
+  const canSubmit = !!disposition || wip !== (status === "wip")
 
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center gap-2">
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={onOpenChange}>
           <PopoverAnchor asChild>
-            <ButtonGroup className={cn("rounded-md text-white", STATUS_BG[status])}>
+            <ButtonGroup ref={anchorRef} className={cn("rounded-md text-white", STATUS_BG[status])}>
               <PopoverTrigger asChild>
                 <Button size="xs" className={cn("min-w-[75px] justify-center text-white shadow-none", STATUS_BG[status])}>
                   <StatusIcon status={status} />
@@ -65,43 +71,32 @@ export function DispositionControl({
               </PopoverTrigger>
             </ButtonGroup>
           </PopoverAnchor>
-          <PopoverContent align="start" className="w-[360px] p-0">
+          <PopoverContent align={align} className="p-0" style={{ width: POPOVER_WIDTH }}>
             <form
-              className="flex flex-col gap-4 p-2.5"
+              className="flex flex-col gap-3 p-2.5"
               onSubmit={(e) => {
                 e.preventDefault()
-                submitDisposition(merchant.mid, { wip, disposition: disposition || undefined, other })
+                submitDisposition(alertId, { wip, disposition: disposition || undefined })
                 toast.success(
                   disposition ? "Disposition submitted." : wip ? "Marked as work in progress." : "Work in progress removed."
                 )
                 setOpen(false)
               }}
             >
-              <div>
-                <div className="text-sm font-medium">Mark Work and Disposition</div>
-                <div className="text-muted-foreground text-sm">
-                  {merchant.name} · {merchant.mid}
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2.5">
                 <div className="text-sm font-medium">Mark Work</div>
-                <div className="flex items-start gap-2">
-                  <Checkbox id={`wip-${alertId}`} checked={wip} onCheckedChange={(v) => setWip(v === true)} className="mt-0.5" />
-                  <div className="grid gap-1">
-                    <Label htmlFor={`wip-${alertId}`} className="font-normal">
-                      Work in Progress
-                    </Label>
-                    <p className="text-muted-foreground text-sm">Locks this merchant to you. Titan only.</p>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox id={`wip-${alertId}`} checked={wip} onCheckedChange={(v) => setWip(v === true)} />
+                  <Label htmlFor={`wip-${alertId}`} className="font-normal">
+                    Work in Progress
+                  </Label>
                 </div>
               </div>
 
+              <div className="inset-shadow-edge-t h-px" role="separator" />
+
               <div className="flex flex-col gap-2">
-                <div>
-                  <div className="text-sm font-medium">Disposition</div>
-                  <p className="text-muted-foreground text-sm">Sets Worked on all of this merchant&apos;s alerts in every queue.</p>
-                </div>
+                <div className="text-sm font-medium">Disposition</div>
                 <RadioGroup value={disposition} onValueChange={setDisposition} className="gap-2">
                   {DISPOSITIONS.map((d) => (
                     <div key={d} className="flex items-center gap-2">
@@ -112,14 +107,6 @@ export function DispositionControl({
                     </div>
                   ))}
                 </RadioGroup>
-                <Input
-                  placeholder="Describe the disposition..."
-                  value={other}
-                  onChange={(e) => setOther(e.target.value)}
-                  disabled={!isOther}
-                  className="ml-6 w-[calc(100%-1.5rem)]"
-                  aria-label="Other disposition"
-                />
               </div>
 
               <div className="flex justify-end gap-2">
@@ -133,11 +120,8 @@ export function DispositionControl({
             </form>
           </PopoverContent>
         </Popover>
-        <Button variant="link" size="xs" className="text-link px-0 font-medium" onClick={() => openDqDetails(alertId)}>
-          DQ Details
-        </Button>
       </div>
-      {note && <div className="text-muted-foreground text-xs">{note}</div>}
+      {note && <div className="text-muted-foreground max-w-[126px] truncate text-xs" title={note}>{note}</div>}
     </div>
   )
 }

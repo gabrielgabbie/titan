@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils"
 import {
   PARAM_ORDER,
   QUEUES,
+  REPORT_DATE,
+  alertKind,
   alertsForMerchant,
   formatCurrency,
   formatSigned,
@@ -31,14 +33,15 @@ import {
 } from "@/lib/data"
 import { columnById, columnsForScope, lockedColumns, type ColumnDef, type ColumnId, type Row, type ViewScope } from "@/lib/columns"
 import { useTitan } from "@/lib/store"
-import { applyFilters, type FilterField, type FilterRule } from "@/lib/filters"
+import { emptyMessage } from "@/lib/empty-message"
+import { applyFilters, isComplete, type FilterField, type FilterRule } from "@/lib/filters"
 import { CountBadge, McBandBadge, STATUS_LABEL, SortHeader, type SortDir } from "./badges"
+import { gridCell, gridHead } from "./grid"
 import { FilterBuilder } from "./filter-builder"
 import { DispositionControl } from "./disposition-control"
+import { DqDetailsBadge, QueueLink, linkClass } from "./links"
 
-type StatusTab = "all" | WorkStatus
-
-const linkClass = "text-link hover:underline underline-offset-2"
+export type StatusTab = "all" | WorkStatus
 
 function sortValue(row: Row, id: ColumnId): string | number {
   const { merchant: m, alert: a } = row
@@ -71,6 +74,8 @@ function sortValue(row: Row, id: ColumnId): string | number {
     case "history":
       return m.history90d
     case "alertRealert":
+      return alertKind(a)
+    case "alertTime":
       return a.time
     case "avgNetTicket":
       return m.avgNetTicket
@@ -100,7 +105,7 @@ function QueuesPopover({ row }: { row: Row }) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex h-5 items-center rounded-full border bg-background px-1.5 text-xs font-medium hover:bg-accent"
+          className="inline-flex h-5 items-center rounded-full bg-card shadow-surface px-1.5 text-xs font-medium hover:bg-accent"
           aria-label={`${others} more queues`}
         >
           +{others}
@@ -115,10 +120,8 @@ function QueuesPopover({ row }: { row: Row }) {
         </div>
         <ul className="mt-3 flex flex-col">
           {all.map((a, i) => (
-            <li key={a.id} className={cn("py-2", i > 0 && "border-t")}>
-              <Link href={`/queues/${a.queueId}`} className={cn(linkClass, "text-sm")}>
-                {getQueue(a.queueId)?.name}
-              </Link>
+            <li key={a.id} className={cn("py-2", i > 0 && "inset-shadow-edge-t")}>
+              <QueueLink queueId={a.queueId} className="text-sm" />
               <div className="text-muted-foreground text-xs">{a.queueReason}</div>
             </li>
           ))}
@@ -137,16 +140,17 @@ function Cell({ row, col }: { row: Row; col: ColumnDef }) {
       return <span className="tabular-nums">{m.mid}</span>
     case "merchantName":
       return (
-        <Link href={`/merchants/${m.mid}`} className={linkClass}>
-          {m.name}
-        </Link>
+        <div className="flex min-w-0 items-center gap-2">
+          <Link href={`/merchants/${m.mid}`} className={cn(linkClass, "truncate")}>
+            {m.name}
+          </Link>
+          <DqDetailsBadge merchant={m} />
+        </div>
       )
     case "queueName":
       return (
         <div className="flex items-center gap-2">
-          <Link href={`/queues/${a.queueId}`} className={linkClass}>
-            {getQueue(a.queueId)?.name}
-          </Link>
+          <QueueLink queueId={a.queueId} />
           <QueuesPopover row={row} />
         </div>
       )
@@ -171,7 +175,9 @@ function Cell({ row, col }: { row: Row; col: ColumnDef }) {
     case "history":
       return `${m.history90d} in 90d`
     case "alertRealert":
-      return `${a.kind} ${a.time}`
+      return alertKind(a)
+    case "alertTime":
+      return `${REPORT_DATE} ${a.time}`
     case "avgNetTicket":
       return formatCurrency(m.avgNetTicket)
     case "dbaName":
@@ -213,7 +219,7 @@ function filterFields(scope: ViewScope): FilterField<Row>[] {
         return [{ id: c.id, label, type: "enum", options: PARAM_ORDER, get: (r) => r.alert.violated }]
       case "alertRealert":
         return [
-          { id: "alertKind", label: "Alert/Re-Alert", type: "enum", options: ["Alert", "Re-alert"], get: (r) => r.alert.kind },
+          { id: "alertKind", label: "Alert/Re-Alert", type: "enum", options: ["Alert", "Re-Alert"], get: (r) => alertKind(r.alert) },
         ]
       default:
         return [
@@ -237,6 +243,9 @@ function pageList(page: number, pages: number): (number | "…")[] {
   return out
 }
 
+/** Rows on one page by default. Every grid shows pagination only when it has more rows than this. */
+export const PAGE_SIZE = 10
+
 export function GridPagination({
   page,
   pages,
@@ -252,7 +261,7 @@ export function GridPagination({
     <Pagination className={cn("mx-0 w-auto", className)}>
       <PaginationContent>
         <PaginationItem>
-          <Button variant="ghost" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>
+          <Button variant="ghost" disabled={page <= 1} onClick={() => onPage(page - 1)}>
             <ChevronLeft /> Previous
           </Button>
         </PaginationItem>
@@ -277,7 +286,7 @@ export function GridPagination({
           </PaginationItem>
         ))}
         <PaginationItem>
-          <Button variant="ghost" size="sm" disabled={page >= pages} onClick={() => onPage(page + 1)}>
+          <Button variant="ghost" disabled={page >= pages} onClick={() => onPage(page + 1)}>
             Next <ChevronRight />
           </Button>
         </PaginationItem>
@@ -290,27 +299,42 @@ export function AlertGrid({
   rows,
   scope,
   paginate = false,
+  initialTab = "all",
+  toolbar,
 }: {
   rows: Row[]
   scope: ViewScope
   paginate?: boolean
+  /** Controls shown at the start of the Filter and Search row (Merchant View puts Report Date and View there). */
+  toolbar?: React.ReactNode
+  /** The status tab the grid opens on, such as the one a Queue View count links to. */
+  initialTab?: StatusTab
 }) {
   const { viewState } = useTitan()
   const state = viewState[scope]
   const view = state.views.find((v) => v.id === state.activeId) ?? state.views[0]
 
-  const [tab, setTab] = React.useState<StatusTab>("all")
+  // Work status is per queue, so only queue grids show it: the status tabs, the pinned Disposition column and its taller rows.
+  const queueLevel = scope === "queue"
+  const [tab, setTab] = React.useState<StatusTab>(initialTab)
   const [query, setQuery] = React.useState("")
   const [rules, setRules] = React.useState<FilterRule[]>([])
   const fields = React.useMemo(() => filterFields(scope), [scope])
   const [sort, setSort] = React.useState<{ id: ColumnId; dir: Exclude<SortDir, null> } | null>(null)
   const [page, setPage] = React.useState(1)
-  const [pageSize, setPageSize] = React.useState(10)
+  const [pageSize, setPageSize] = React.useState(PAGE_SIZE)
 
-  const columns: ColumnDef[] = [
-    ...lockedColumns(scope),
-    ...(view?.columns.filter((c) => c.visible).map((c) => columnById(c.id)) ?? []),
-  ]
+  // Locked columns lead, except Detection Queue, which follows MCC when the view shows it (as in Figma).
+  const locked = lockedColumns(scope)
+  const chosen = view?.columns.filter((c) => c.visible).map((c) => columnById(c.id)) ?? []
+  const queueCol = locked.find((c) => c.id === "queueName")
+  const lead = locked.filter((c) => c.id !== "queueName")
+  const mccAt = chosen.findIndex((c) => c.id === "mcc")
+  const columns: ColumnDef[] = !queueCol
+    ? [...lead, ...chosen]
+    : mccAt >= 0
+      ? [...lead, ...chosen.slice(0, mccAt + 1), queueCol, ...chosen.slice(mccAt + 1)]
+      : [...lead, queueCol, ...chosen]
 
   const counts = {
     all: rows.length,
@@ -334,9 +358,13 @@ export function AlertGrid({
     })
   }
 
-  const pages = paginate ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1
+  const empty = emptyMessage("alerted merchants", { filtered: rules.some(isComplete), searched: !!q, loaded: rows.length > 0 })
+
+  // Pagination shows only when the rows outgrow one default page; otherwise every row shows, whatever page size is set.
+  const paged = paginate && filtered.length > PAGE_SIZE
+  const pages = paged ? Math.max(1, Math.ceil(filtered.length / pageSize)) : 1
   const current = Math.min(page, pages)
-  const visible = paginate ? filtered.slice((current - 1) * pageSize, current * pageSize) : filtered
+  const visible = paged ? filtered.slice((current - 1) * pageSize, current * pageSize) : filtered
 
   React.useEffect(() => setPage(1), [tab, query, rules, pageSize])
 
@@ -346,23 +374,26 @@ export function AlertGrid({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as StatusTab)}>
-          <TabsList>
-            {(
-              [
-                ["all", "All"],
-                ["unworked", "Unworked"],
-                ["wip", "WIP"],
-                ["worked", "Worked"],
-              ] as const
-            ).map(([value, label]) => (
-              <TabsTrigger key={value} value={value} className="gap-1.5 px-2">
-                {label}
-                <CountBadge count={counts[value]} active={tab === value} />
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {toolbar}
+        {queueLevel && (
+          <Tabs value={tab} onValueChange={(v) => setTab(v as StatusTab)}>
+            <TabsList>
+              {(
+                [
+                  ["all", "All"],
+                  ["unworked", "Unworked"],
+                  ["wip", "WIP"],
+                  ["worked", "Worked"],
+                ] as const
+              ).map(([value, label]) => (
+                <TabsTrigger key={value} value={value} className="gap-1.5 px-2">
+                  {label}
+                  <CountBadge count={counts[value]} active={tab === value} />
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
         <div className="flex items-center gap-2">
           <FilterBuilder fields={fields} rules={rules} onChange={setRules} />
           <InputGroup className="h-8 w-[300px]">
@@ -378,7 +409,7 @@ export function AlertGrid({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border">
+      <div className="surface overflow-hidden">
         <Table className="text-sm">
           <TableHeader className="bg-muted">
             <TableRow className="hover:bg-muted">
@@ -387,9 +418,9 @@ export function AlertGrid({
                   key={col.id}
                   style={{ minWidth: col.width }}
                   className={cn(
-                    "h-[30px] px-2.5 text-xs",
+                    gridHead,
                     col.align === "right" && "text-right",
-                    i === 0 && "bg-muted sticky left-0 z-20 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
+                    queueLevel && i === 0 && "bg-muted sticky left-0 z-20 after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
                   )}
                 >
                   <SortHeader
@@ -403,25 +434,19 @@ export function AlertGrid({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="text-muted-foreground h-24 text-center">
-                  No merchants match the current filters.
-                </TableCell>
-              </TableRow>
-            )}
             {visible.map((row, ri) => (
               <TableRow
                 key={row.alert.id}
-                className={cn("h-14 hover:bg-zinc-100", ri % 2 === 1 ? "bg-zinc-50" : "bg-background")}
+                className={cn(queueLevel ? "h-14" : "h-10", "hover:bg-zinc-100", ri % 2 === 1 ? "bg-zinc-50" : "bg-card")}
               >
                 {columns.map((col, i) => (
                   <TableCell
                     key={col.id}
                     className={cn(
-                      "px-2.5 py-2",
+                      gridCell,
+                      "py-2",
                       col.align === "right" && "text-right tabular-nums",
-                      i === 0 && "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
+                      queueLevel && i === 0 && "sticky left-0 z-10 bg-inherit after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-border"
                     )}
                   >
                     <Cell row={row} col={col} />
@@ -431,9 +456,15 @@ export function AlertGrid({
             ))}
           </TableBody>
         </Table>
+        {/* Outside the table, so it centers in the visible grid rather than across its full scroll width. */}
+        {visible.length === 0 && (
+          <div className="text-muted-foreground flex h-24 items-center justify-center text-sm">
+            {empty}
+          </div>
+        )}
       </div>
 
-      {paginate && (
+      {paged && (
         <div className="flex flex-wrap items-center justify-between gap-4">
           <span className="text-muted-foreground text-sm">
             Showing {visible.length} of {filtered.length}

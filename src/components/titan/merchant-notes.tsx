@@ -21,7 +21,7 @@ function NoteItem({ mid, note }: { mid: string; note: Note }) {
   return (
     <li className="flex gap-3">
       <UserAvatar name={note.author} className="size-10 text-sm" />
-      <div className="flex min-w-0 flex-1 flex-col gap-2 rounded-lg border p-3">
+      <div className="flex min-w-0 flex-1 flex-col gap-2 rounded-lg p-3 shadow-surface">
         <div className="flex items-start justify-between gap-2">
           <div>
             <div className="text-sm font-medium">{note.author}</div>
@@ -29,13 +29,12 @@ function NoteItem({ mid, note }: { mid: string; note: Note }) {
           </div>
           {editable && !editing && (
             <div className="flex gap-1">
-              <Button variant="outline" size="icon-xs" className="size-7" aria-label="Edit note" onClick={() => setEditing(true)}>
+              <Button variant="outline" size="icon-sm" aria-label="Edit note" onClick={() => setEditing(true)}>
                 <Pencil />
               </Button>
               <Button
-                variant="ghost"
-                size="icon-xs"
-                className="bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive size-7"
+                variant="destructive"
+                size="icon-sm"
                 aria-label="Delete note"
                 onClick={() => {
                   deleteNote(mid, note.id)
@@ -93,7 +92,7 @@ export function MerchantNotes({ mid }: { mid: string }) {
   return (
     <Card className="gap-4 py-3">
       <CardHeader className="px-3">
-        <CardTitle className="text-sm font-medium">Merchant Notes</CardTitle>
+        <CardTitle className="text-sm font-semibold">Merchant Notes</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-3">
         <form
