@@ -71,7 +71,7 @@ function initialViews(scope: ViewScope): ViewState {
       {
         id: "high-score-focus",
         name: "High score focus",
-        columns: defaultColumnSettings(scope, ["mcc", "mcScore", "mcBand", "scoreDelta", "newHigh", "mcHighToday", "mcScore24hAvg", "netAmount"]),
+        columns: defaultColumnSettings(scope, ["mcc", "queueName", "mcScore", "mcBand", "scoreDelta", "newHigh", "mcHighToday", "mcScore24hAvg", "netAmount"]),
       },
     ],
     activeId: "my-view",

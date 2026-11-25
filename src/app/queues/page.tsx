@@ -106,7 +106,7 @@ export default function QueueViewPage() {
           <h2 className="text-sm font-semibold">Detection Queues</h2>
           <div className="flex items-center gap-2">
             <FilterBuilder fields={FIELDS} rules={rules} onChange={setRules} />
-            <InputGroup className="h-8 w-[300px]">
+            <InputGroup className="h-8 w-full sm:w-[300px]">
               <InputGroupAddon>
                 <Search />
               </InputGroupAddon>
