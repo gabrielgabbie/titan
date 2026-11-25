@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils"
 import {
   columnById,
   columnsForScope,
-  defaultColumnSettings,
   lockedColumns,
+  defaultColumnSettings,
   type ColumnSetting,
   type SavedView,
   type ViewScope,
@@ -143,9 +143,12 @@ export function ViewSheet({
 
             <ul className="flex flex-col pt-2 pb-4">
               {locked.filter((c) => matches(c.label)).map((c) => (
-                <li key={c.id} className="flex h-7 items-center gap-2 pl-6 text-sm">
-                  <Lock className="size-4" aria-label="Always shown" />
-                  {c.label}
+                <li key={c.id} className="flex h-7 items-center gap-2 text-sm">
+                  <Lock className="size-4 shrink-0" aria-label="Locked column" />
+                  <Checkbox id={`col-${c.id}`} checked disabled />
+                  <Label htmlFor={`col-${c.id}`} className="flex-1 font-normal">
+                    {c.label}
+                  </Label>
                 </li>
               ))}
               {columns

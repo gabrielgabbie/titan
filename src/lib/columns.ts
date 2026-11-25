@@ -35,6 +35,7 @@ export interface ColumnDef {
   header?: string
   /** Source code shown at the right of the Edit View list (A1, P#C1…). */
   code?: string
+  /** Locked: always shown and always first, in this order; cannot be hidden or moved (lock icon in Edit View). */
   locked?: boolean
   align?: "left" | "right"
   width: number
@@ -45,7 +46,7 @@ export const COLUMNS: ColumnDef[] = [
   { id: "disposition", label: "Disposition", locked: true, width: 150, scopes: ["queue"] },
   { id: "mid", label: "MID", locked: true, width: 160 },
   { id: "merchantName", label: "Merchant Name", locked: true, width: 300 },
-  { id: "queueName", label: "Detection Queue", locked: true, width: 280, scopes: ["merchant"] },
+  { id: "queueName", label: "Detection Queue", width: 280, scopes: ["merchant"] },
   { id: "mcc", label: "MCC", width: 90 },
   { id: "violated", label: "Violated Parameters", width: 190 },
   { id: "mcScore", label: "MC Score", code: "A1", align: "right", width: 120 },
@@ -78,6 +79,7 @@ export const optionalColumns = (scope: ViewScope) => columnsForScope(scope).filt
 
 export const DEFAULT_VISIBLE: ColumnId[] = [
   "mcc",
+  "queueName",
   "violated",
   "mcScore",
   "mcBand",
@@ -91,7 +93,7 @@ export const DEFAULT_VISIBLE: ColumnId[] = [
   "alertTime",
 ]
 
-/** Full ordering of optional columns, with visibility. */
+/** Order and visibility of the scope's optional columns; locked columns are not stored in a view. */
 export interface ColumnSetting {
   id: ColumnId
   visible: boolean
