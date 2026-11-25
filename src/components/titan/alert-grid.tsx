@@ -246,6 +246,49 @@ function pageList(page: number, pages: number): (number | "…")[] {
 /** Rows on one page by default. Every grid shows pagination only when it has more rows than this. */
 export const PAGE_SIZE = 10
 
+/** The footer under every paginated grid: rows shown, page links and rows per page. */
+export function GridFooter({
+  shown,
+  total,
+  page,
+  pages,
+  onPage,
+  pageSize,
+  onPageSize,
+}: {
+  shown: number
+  total: number
+  page: number
+  pages: number
+  onPage: (page: number) => void
+  pageSize: number
+  onPageSize: (size: number) => void
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <span className="text-muted-foreground text-sm">
+        Showing {shown} of {total}
+      </span>
+      <GridPagination page={page} pages={pages} onPage={onPage} />
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium">Rows per page</span>
+        <Select value={String(pageSize)} onValueChange={(v) => onPageSize(Number(v))}>
+          <SelectTrigger size="sm" className="w-[70px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[5, 10, 20, 50].map((n) => (
+              <SelectItem key={n} value={String(n)}>
+                {n}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  )
+}
+
 export function GridPagination({
   page,
   pages,
@@ -324,17 +367,10 @@ export function AlertGrid({
   const [page, setPage] = React.useState(1)
   const [pageSize, setPageSize] = React.useState(PAGE_SIZE)
 
-  // Locked columns lead, except Detection Queue, which follows MCC when the view shows it (as in Figma).
-  const locked = lockedColumns(scope)
+  // Same order as Edit View: the locked columns first, then the view's visible columns in its order.
+  // In queue grids Disposition is locked first, so it is the column that stays pinned while the rest scroll.
   const chosen = view?.columns.filter((c) => c.visible).map((c) => columnById(c.id)) ?? []
-  const queueCol = locked.find((c) => c.id === "queueName")
-  const lead = locked.filter((c) => c.id !== "queueName")
-  const mccAt = chosen.findIndex((c) => c.id === "mcc")
-  const columns: ColumnDef[] = !queueCol
-    ? [...lead, ...chosen]
-    : mccAt >= 0
-      ? [...lead, ...chosen.slice(0, mccAt + 1), queueCol, ...chosen.slice(mccAt + 1)]
-      : [...lead, queueCol, ...chosen]
+  const columns: ColumnDef[] = [...lockedColumns(scope), ...chosen]
 
   const counts = {
     all: rows.length,
@@ -396,7 +432,7 @@ export function AlertGrid({
         )}
         <div className="flex items-center gap-2">
           <FilterBuilder fields={fields} rules={rules} onChange={setRules} />
-          <InputGroup className="h-8 w-[300px]">
+          <InputGroup className="h-8 w-full sm:w-[300px]">
             <InputGroupAddon>
               <Search />
             </InputGroupAddon>
@@ -409,6 +445,8 @@ export function AlertGrid({
         </div>
       </div>
 
+      {/* The grid and its footer sit 12px apart, as in every grid with pagination. */}
+      <div className="flex flex-col gap-3">
       <div className="surface overflow-hidden">
         <Table className="text-sm">
           <TableHeader className="bg-muted">
@@ -465,28 +503,9 @@ export function AlertGrid({
       </div>
 
       {paged && (
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <span className="text-muted-foreground text-sm">
-            Showing {visible.length} of {filtered.length}
-          </span>
-          <GridPagination page={current} pages={pages} onPage={setPage} />
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Rows per page</span>
-            <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
-              <SelectTrigger size="sm" className="w-[70px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[5, 10, 20, 50].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <GridFooter shown={visible.length} total={filtered.length} page={current} pages={pages} onPage={setPage} pageSize={pageSize} onPageSize={setPageSize} />
       )}
+      </div>
     </div>
   )
 }

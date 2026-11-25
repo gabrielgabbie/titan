@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { GridPagination, PAGE_SIZE } from "@/components/titan/alert-grid"
+import { GridFooter, PAGE_SIZE } from "@/components/titan/alert-grid"
 import { gridCell, gridHead, gridRow } from "@/components/titan/grid"
 import { SortHeader } from "@/components/titan/badges"
 import { DispositionControl } from "@/components/titan/disposition-control"
@@ -125,7 +125,8 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
     score: (t) => t.score,
     reason: (t) => t.reasonCode,
   })
-  const pageSize = PAGE_SIZE
+  const [pageSize, setPageSize] = React.useState(PAGE_SIZE)
+  React.useEffect(() => setPage(1), [pageSize])
   const pages = Math.max(1, Math.ceil(sorted.length / pageSize))
   const rows = sorted.slice((page - 1) * pageSize, page * pageSize)
   const paged = sorted.length > PAGE_SIZE
@@ -183,7 +184,9 @@ function TransactionHistory({ merchant }: { merchant: Merchant }) {
             </TableBody>
           </Table>
         </div>
-        {paged && <GridPagination page={page} pages={pages} onPage={setPage} className="justify-center" />}
+        {paged && (
+          <GridFooter shown={rows.length} total={sorted.length} page={page} pages={pages} onPage={setPage} pageSize={pageSize} onPageSize={setPageSize} />
+        )}
       </CardContent>
     </Card>
   )
